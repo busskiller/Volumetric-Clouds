@@ -24,6 +24,7 @@
 	#pragma fragment frag
 	#include "UnityCG.cginc"
 
+
 	//Our defined global variables
 	sampler2D _NoiseOffsets;
 	sampler3D _PerlinWorleyNoise;
@@ -87,7 +88,7 @@
 	}
 
 	//p is perhaps our current position, whilse weather_data is our weather texture
-	float SampleCloudDensity(float3 p, float3 weather_data) 
+	float SampleCloudDensity(float3 p, float3 weather_data, float3 ray) 
 	{
 		//These two floats are wrong valued, as I have no idea what they should be. Used in "low_frequency_noises"
 		float4 whereToLookInThe3DTexture = (1, 0, 0, 0);
@@ -97,7 +98,11 @@
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
 		//In order, i think each of them is going to be stored in the color channels, that is Perlin-Worley in R, and GBA is Worley
 		//float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, whereToLookInThe3DTexture, float4 (p, mip_level)).rgba;
-		float4 low_frequency_noises = (1, 2, 3, 4);
+		//float4 low_frequency_noises = (1, 2, 3, 4);
+
+		float4 test = (ray, 0.0);
+
+		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
 
 		//Here we make an FBM out of the 3 worley noises found in the GBA channels of the low_frequency_noises. Again, not super sure.
 		//We will be using this FBM to add detail to the low-frequency Perlin-Worley noise (the R channel)
