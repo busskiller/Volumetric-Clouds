@@ -68,10 +68,36 @@
   <ItemGroup>
     <Compile Include="Assets\Assets\GlobalShaderVariables.cs" />
     <Compile Include="Assets\Assets\RenderMaterialFullscreen.cs" />
+    <Compile Include="Assets\kode80\Clouds\Examples\Demo\Scripts\FlyCamera.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\BehaviorStateStore.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\CrepuscularRays.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\EditorState.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\FullScreenQuad.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\RenderSettings.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\SharedProperties.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\TexturePainter.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\TimeOfDay.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\TimeOfDayKeyFrame.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\kode80CloudShadows.cs" />
+    <Compile Include="Assets\kode80\Clouds\Scripts\kode80Clouds.cs" />
+    <Compile Include="Assets\kode80\Effects\Scripts\FilmicTonemapping.cs" />
+    <Compile Include="Assets\kode80\UnityTools\EditorTools\Scripts\RecordVideo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Assets\Raymarching Volumetric Clouds Example.shader" />
     <None Include="Assets\Assets\Volumetric Clouds Example.shader" />
+    <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
+    <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlender.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlenderEditor.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudShadowPass.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudsCrepuscularRays.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeCloudsCommon.cginc" />
+    <None Include="Assets\kode80\Effects\Resources\FilmicTonemapping.shader" />
+    <None Include="Assets\kode80\UnityTools\AssetVersion.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
