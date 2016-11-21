@@ -29,6 +29,7 @@
 	sampler2D _NoiseOffsets;
 	sampler3D _PerlinWorleyNoise;
 	sampler3D _WorleyNoise;
+	sampler2D _CurlNoise;
 
 	float3 _CamPos;
 	float3 _CamRight;
@@ -75,9 +76,16 @@
 	
 
 
-	//A function that calculates a normalized scalar values that represents the height
+	//A function that calculates a normalized scalar values that represents the height of the current sample position (in the cloud layer)
+	//inPosition is the current ray position. However, I have no clue what inCloudMinMax is.
+	float GetHeightFractionForPoint(float3 inPosition, float2 inCloudMinMax)
+	{
+		// Get global fractional ppsition in cloud zone.
 
+		float height_fraction = (inPosition.z - inCloudMinMax.x) / (inCloudMinMax.y - inCloudMinMax.x);
 
+		return saturate(height_fraction);
+	}
 
 	//A remapping function, that maps values from one range to another, to be used when combining noises to make our clouds
 	//This function is litterally just ripped from the book. In fact, most of this code is ripped from the book.
@@ -161,8 +169,35 @@
 		base_cloud_with_coverage *= cloud_coverage;
 
 
+		//Final steps. Incomplete as I cant figure out the damn mix function they use!
+		/*
 
+		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
+		//We use the curl noise to distort the sample coordinate at the bottom of the clouds
+		//We do this to simulate turbulence.
+		
+		//We get the height fraction (the position of the current sample) to use it when blending the different noises over height
+		//We use this together with the FBM we'll make in a momement to transition between cloud shapes
+		float inCloudMinMax = 1;
+		float height_fraction = GetHeightFractionForPoint(p, inCloudMinMax);
+		
+		//Then we sample the curl noise...:
+		float2 curl_noise = tex2Dlod(_CurlNoise, test);
+		//and...  apply it to the current position
+		float2 currentPosition;
+		currentPosition.xy = p.xy;
+		currentPosition.xy += curl_noise.xy * (1.0 - height_fraction);
 
+		//We  build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
+		//First we need to sample the noise before using it to make FBM
+		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, test);
+		//Then we make the FBM
+		float high_freq_FBM = (high_frequency_noises.r * 0.625) + (high_frequency_noises.r * 0.25) + (high_frequency_noises.r * 0.125);
+
+		//The transition magic over height happens here:
+		float hight_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 90.0));
+
+		*/
 
 	}
 
