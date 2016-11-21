@@ -38,6 +38,11 @@
 	float _AspectRatio;
 	float _FieldOfView;
 
+	float4 _Gradient1;
+	float4 _Gradient2;
+	float4 _Gradient3;
+
+
 	//Our defined local properties
 	int _Iterations;
 	float3 _SkyColor;
@@ -69,6 +74,11 @@
 	//NEW CODE FROM HERE. HOPEFULLY WE CAN MAKE THIS BABY WORK.
 	
 
+
+	//A function that calculates a normalized scalar values that represents the height
+
+
+
 	//A remapping function, that maps values from one range to another, to be used when combining noises to make our clouds
 	//This function is litterally just ripped from the book. In fact, most of this code is ripped from the book.
 	float Remap(float original_value, float original_min, float original_max, float new_min, float new_max)
@@ -77,31 +87,47 @@
 			/ (original_max - original_min)) * (new_max - new_min));
 	}
 	
-	//We need to figure out the density height function. I'll leave it blank for now
-	//weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
-	//Remember, this function is used to figure out which clouds should be drawn and so forth
+	//Our density height function. It is called three times, as we have three gradients for the three major cloud types. It gives us a float, representing the gradient.
+	//This function is called within the function "GetDensityHeightGradientForPoint". In that function, we use the weather data. More on that in a bit.
+	//float a is the height of the ray, namely the y value.
+	inline float DensityHeightFunction(float a, float4 gradient)
+	{
+		return smoothstep(gradient.x, gradient.y, a) - smoothstep(gradient.z, gradient.w, a);
+	}
+
+
+	//This function is used to figure out which clouds should be drawn and so forth
+	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
+	//This function samples the B channel (Cloud type) using the ray position. 
+	//The sampled values is then used to to weight the three float returns we get from the three density height functions that it calls
+	//In other words, the weighted sum of the gradients are affected by the cloud type attribute, which is found using the current ray positon
+	//P is our current ray position
 	float GetDensityHeightGradientForPoint(float3 p, float3 weather_data) {
 		
-		float InsertDamnFunctionHere = 1;
-		
-		return InsertDamnFunctionHere;
+		float gradient1 = DensityHeightFunction(p.y, _Gradient1);
+		float gradient2 = DensityHeightFunction(p.y, _Gradient2);
+		float gradient3 = DensityHeightFunction(p.y, _Gradient3);
+
+		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
+		float weightedSum = 0;
+
+		return weightedSum;
 	}
+
 
 	//p is perhaps our current position, whilse weather_data is our weather texture
 	float SampleCloudDensity(float3 p, float3 weather_data, float3 ray) 
 	{
-		//These two floats are wrong valued, as I have no idea what they should be. Used in "low_frequency_noises"
-		float4 whereToLookInThe3DTexture = (1, 0, 0, 0);
-		float mip_level = 0.6;
 
 		//Used to read the first 3D texture, namely the PerlinWorleyNoise
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
 		//In order, i think each of them is going to be stored in the color channels, that is Perlin-Worley in R, and GBA is Worley
-		//float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, whereToLookInThe3DTexture, float4 (p, mip_level)).rgba;
-		//float4 low_frequency_noises = (1, 2, 3, 4);
-
+		/*
+		float4 whereToLookInThe3DTexture = (1, 0, 0, 0);
+		float mip_level = 0.6;
+		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, whereToLookInThe3DTexture, float4 (p, mip_level)).rgba;
+		*/
 		float4 test = (ray, 0.0);
-
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
 
 		//Here we make an FBM out of the 3 worley noises found in the GBA channels of the low_frequency_noises. Again, not super sure.
@@ -112,7 +138,7 @@
 		//We store this in what we will call our base_cloud
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
-		//We use the density height function to figure out which clouds should be drawn
+		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
 		float density_height_gradient = GetDensityHeightGradientForPoint(p, weather_data);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
@@ -130,9 +156,11 @@
 		//Funny enough, we use the remap function to combine the cloud coverage with our base_cloud
 		float base_cloud_with_coverage = Remap(base_cloud, cloud_coverage, 1.0, 0.0, 1.0);
 
-		//We when multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
+		//We then multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
 		//An example of this, is that smaller clouds should look lighter now. Stuff like that.
 		base_cloud_with_coverage *= cloud_coverage;
+
+
 
 
 
