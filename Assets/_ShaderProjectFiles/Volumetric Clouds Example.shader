@@ -29,7 +29,9 @@
 	sampler2D _NoiseOffsets;
 	sampler3D _PerlinWorleyNoise;
 	sampler3D _WorleyNoise;
+
 	sampler2D _CurlNoise;
+	sampler2D _WeatherTexture;
 
 	float3 _CamPos;
 	float3 _CamRight;
@@ -80,7 +82,7 @@
 	//inPosition is the current ray position. However, I have no clue what inCloudMinMax is.
 	float GetHeightFractionForPoint(float3 inPosition, float2 inCloudMinMax)
 	{
-		// Get global fractional ppsition in cloud zone.
+		// Get global fractional p0sition in cloud zone.
 
 		float height_fraction = (inPosition.z - inCloudMinMax.x) / (inCloudMinMax.y - inCloudMinMax.x);
 
@@ -124,8 +126,11 @@
 
 
 	//p is perhaps our current position, whilse weather_data is our weather texture
-	float SampleCloudDensity(float3 p, float3 weather_data, float3 ray) 
+	float SampleCloudDensity(float3 p, sampler2D WeatherTexture, float3 ray) 
 	{
+
+		
+
 
 		//Used to read the first 3D texture, namely the PerlinWorleyNoise
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
@@ -137,6 +142,11 @@
 		*/
 		float4 test = (ray, 0.0);
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
+
+
+		//Before moving on, here we quickly sample the weather texture, converting it to a float3, just to get it out of the way
+		float3 weather_data = tex2Dlod(WeatherTexture, test);
+
 
 		//Here we make an FBM out of the 3 worley noises found in the GBA channels of the low_frequency_noises. Again, not super sure.
 		//We will be using this FBM to add detail to the low-frequency Perlin-Worley noise (the R channel)
@@ -168,8 +178,11 @@
 		//An example of this, is that smaller clouds should look lighter now. Stuff like that.
 		base_cloud_with_coverage *= cloud_coverage;
 
+		return base_cloud_with_coverage;
 
-		//Final steps. Incomplete as I cant figure out the damn mix function they use!
+
+
+		//Final steps. Incomplete as I cant figure out the damn mix function they use! It is also here that the curl noise comes into play!
 		/*
 
 		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
@@ -202,69 +215,6 @@
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*
-	float distFunc(float3 pos)
-	{
-		const float sphereRadius = 1;
-		return length(pos) - sphereRadius;
-	}
-
-	fixed4 renderSurface(float3 pos)
-	{
-		const float2 eps = float2(0.0, 0.01);
-
-		float ambientIntensity = 0.1;
-		float3 lightDir = float3(0, -0.5, 0.5);
-
-		float3 normal = normalize(float3(
-			distFunc(pos + eps.yxx) - distFunc(pos - eps.yxx),
-			distFunc(pos + eps.xyx) - distFunc(pos - eps.xyx),
-			distFunc(pos + eps.xxy) - distFunc(pos - eps.xxy)));
-
-		float diffuse = ambientIntensity + max(dot(-lightDir, normal), 0);
-
-		return fixed4(diffuse, diffuse, diffuse, 1);
-	}
-	*/
-
-
-	// Noise function by Inigo Quilez - https://www.shadertoy.com/view/4sfGzS
-	float noise(float3 x) { x *= 4.0; float3 p = floor(x); float3 f = frac(x); f = f*f*(3.0 - 2.0*f); float2 uv = (p.xy + float2(37.0, 17.0)*p.z) + f.xy; float2 rg = tex2D(_NoiseOffsets, (uv + 0.5) / 256.0).yx; return lerp(rg.x, rg.y, f.z); }
-    
-	// This function is the actual noise function we are going to be using.
-	// The more octaves you give it, the more details we'll get in our nois
-	float fbm(float3 pos, int octaves) 
-		{ 
-			float f = 0.; for (int i = 0; i < octaves; i++) 
-				
-				{
-					f += noise(pos) / pow(2, i + 1); pos *= 2.01; 
-				}
-
-			f /= 1 - 1 / pow(2, octaves + 1); 
-			
-			return f; 
-	}
-
-
 	//Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
@@ -277,14 +227,15 @@
 
 
 
-		// So now we have a position, and a ray defined for our current fragment, and we know from earlier in this article that it matches the field of view and aspect ratio of the camera. 
-		// And we can now start iterating and creating our clouds. 
-		// We will not be ray-marching twoards any distance field in this example. So the following code should be much easier to understand.
+		// So now we have a position, and a ray defined for our current fragment, that matches the field of view and aspect ratio of the camera. 
+		// We can now start iterating and creating our clouds. 
+		// We will not be ray-marching twoards any distance field at this point in time.
 		// pos is our original position, and p is our current position which we are going to be using later on.
 		float3 p = pos;
 
-		// For each iteration, we read from our noise function the density of our current position, and adds it to this density variable.
-		float density = 0;
+		// For each iteration, we read from our SampleCloudDensity function the density of our current position, and add it to this density variable.
+		float density = SampleCloudDensity(p, _WeatherTexture, ray);
+
 
 		for (float i = 0; i < _Iterations; i++)
 		{
@@ -296,56 +247,18 @@
 			// Note that smoothstep here doesn't do the same as Mathf.SmoothStep() in Unity C# - which is frustrating btw. Get a grip Unity!
 			// Smoothstep in shader languages interpolates between two values, given t, and returns a value between 0 and 1. 
 
-			// To get a bit of variety in our clouds we collect two different samples for each iteration.
-			float denseClouds = smoothstep(_CloudDensity, 0.75, fbm(p, 5));
-			float lightClouds = (smoothstep(-0.2, 1.2, fbm(p * 2, 2)) - 0.5) * 0.5;
-			// Note that I smoothstep again to tell which range of the noise we should consider clouds.
-
-			// Here we add our result to our density variable
-			density += (lightClouds + denseClouds) * alpha;
+			// At each iteration, we sample the density and add it to the density variable
+			density += SampleCloudDensity(p, _WeatherTexture, ray);
 			// And then we move one step further away from the camera.
 			p = pos + ray * f * _ViewDistance;
 		}
+
+
 		// And here i just melted all our variables together with random numbers until I had something that looked good.
 		// You can try playing around with them too.
 		float3 color = _SkyColor + (_CloudColor.rgb - 0.5) * (density / _Iterations) * 20 * _CloudColor.a;
 
 		return fixed4(color, 1);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		/*
-		fixed4 color = 0;
-
-		for (int i = 0; i < 30; i++)
-		{
-			float d = distFunc(pos);
-
-			if (d < 0.01)
-			{
-				color = renderSurface(pos);
-				break;
-			}
-
-			pos += ray * d;
-
-			if (d > 40)
-			{
-				break;
-			}
-		*/
 
 
 	}

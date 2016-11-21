@@ -140,8 +140,9 @@
     <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\SemanticVersion.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Assets\Raymarching Volumetric Clouds Example.shader" />
-    <None Include="Assets\Assets\Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example_BACKUP-IGNORETHIS.shader" />
     <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
     <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlender.shader" />

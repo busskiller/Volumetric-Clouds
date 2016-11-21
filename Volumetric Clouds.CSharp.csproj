@@ -66,8 +66,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Assets\GlobalShaderVariables.cs" />
-    <Compile Include="Assets\Assets\RenderMaterialFullscreen.cs" />
+    <Compile Include="Assets\_ShaderProjectFiles\GlobalShaderVariables.cs" />
+    <Compile Include="Assets\_ShaderProjectFiles\RenderMaterialFullscreen.cs" />
     <Compile Include="Assets\kode80\Clouds\Examples\Demo\Scripts\FlyCamera.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\BehaviorStateStore.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\CrepuscularRays.cs" />
@@ -84,8 +84,9 @@
     <Compile Include="Assets\kode80\UnityTools\EditorTools\Scripts\RecordVideo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Assets\Raymarching Volumetric Clouds Example.shader" />
-    <None Include="Assets\Assets\Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example_BACKUP-IGNORETHIS.shader" />
     <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
     <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlender.shader" />

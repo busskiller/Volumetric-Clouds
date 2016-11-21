@@ -14,8 +14,9 @@ public class GlobalShaderVariables : MonoBehaviour {
     public Texture3D LowFrequency_PerlinWorleyNoise;
     public Texture3D HighFrequency_WorleyNoise;
 
-    [HeaderAttribute("Our 2D Coil noise texture")]
-    public Texture3D Curl_Noise;
+    [HeaderAttribute("Our 2D textures")]
+    public Texture2D Curl_Noise;
+    public Texture2D Weather_Texture;
 
     [HeaderAttribute("Gradients representing Cloudtype")]
     public Gradient cloudGradient1;
@@ -33,6 +34,8 @@ public class GlobalShaderVariables : MonoBehaviour {
         Shader.SetGlobalTexture("_PerlinWorleyNoise", this.LowFrequency_PerlinWorleyNoise);
         Shader.SetGlobalTexture("_WorleyNoise", this.HighFrequency_WorleyNoise);
         Shader.SetGlobalTexture("_CurlNoise", this.Curl_Noise);
+        Shader.SetGlobalTexture("_WeatherTexture", this.Weather_Texture);
+
 
         UpdateGradientVectors();
     }
