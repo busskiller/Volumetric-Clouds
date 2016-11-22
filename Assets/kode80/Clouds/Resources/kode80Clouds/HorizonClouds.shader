@@ -12,7 +12,7 @@
 //  http://kode80.com/
 //
 //***************************************************
-Shader "Hidden/kode80/HorizonClouds"
+Shader "Custom/P5/HorizonClouds"
 {
 
 	Properties{
@@ -23,7 +23,7 @@ Shader "Hidden/kode80/HorizonClouds"
 		// Essentially the background color
 		_SkyColor("Sky Color", Color) = (0.176, 0.478, 0.871, 1)
 		// Cloud color
-		_CloudColor("Cloud Color", Color) = (1, 1, 1, 1)
+		_CloudColor("Cloud Color", Color) = (1,1,1, 1)
 		// How dense our clouds should be
 		_CloudDensity("Cloud Density", Range(0, 1)) = 0.5
 
@@ -63,6 +63,9 @@ Shader "Hidden/kode80/HorizonClouds"
 	float4 _Gradient2;
 	float4 _Gradient3;
 
+	//Cloud80DefinedVariables
+	float _CoverageScale;
+	float _RayStepLength;
 
 	//Our defined local properties
 	int _Iterations;
@@ -71,9 +74,14 @@ Shader "Hidden/kode80/HorizonClouds"
 	float _ViewDistance;
 	float _CloudDensity;
 	float _RayMinimumY;
-
+	float _BaseScale;
+	float3 _LightDirection;
+	float _HorizonCoverageStart;
+	float _HorizonCoverageEnd;
+	float _CoverageOffset;
 	#define FLOAT4_TYPE( f)		f.b
-
+	#define FLOAT4_COVERAGE( f)	f.r
+	#define FLOAT4_RAIN( f)		f.g
 	//Base input struct
 	struct v2f
 	{
@@ -170,8 +178,30 @@ Shader "Hidden/kode80/HorizonClouds"
 		{
 			return smoothstep( gradient.x, gradient.y, a) - smoothstep( gradient.z, gradient.w, a);
 		}
+
+				
+	inline float4 SampleCoverage( float3 ray, float csRayHeight)
+	{
+		float2 unit = ray.xz * _CoverageScale;
+		float2 uv = unit * 0.5 + 0.5;
+		uv += _CoverageOffset;
+
+		float depth = distance( ray, _CameraPosition) / _MaxDistance;
+		float4 coverage = tex2Dlod(_WeatherTexture , float4( uv, 0.0, 0.0));
+		float4 coverageB = float4( 1.0, 0.0, 0.0, 0.0);
+		//coverageB.b = saturate( smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart, depth) * 2.0);
+		float alpha = smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth);
+
+		coverageB = float4( smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth),
+						0.0,
+						smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart + (_HorizonCoverageEnd - _HorizonCoverageStart) * 0.5, depth),
+						0.0);
+
+		return lerp( coverage, coverageB, alpha);
+	}
+
 	//P is either our current ray position or current camera position! 
-	float SampleCloudDensity(float3 ray, sampler2D WeatherTexture) 
+	float SampleCloudDensity(float3 ray) 
 	{
 		////
 		////PART 1
@@ -179,24 +209,26 @@ Shader "Hidden/kode80/HorizonClouds"
 		//Here we  read the first 3D texture, namely the PerlinWorleyNoise
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
 		//In order, i think each of them is going to be stored in the color channels, that is Perlin-Worley in R, and GBA is Worley
-		float4 test = float4(ray, 0);
+		//_Base scale will increase the size of the clouds
+		float4 test = float4(ray , 0);
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
 
 
 		low_frequency_noises *=  GetDensityHeightGradientScalar(ray.y);
 
+
+
 		float noise = saturate((low_frequency_noises.r + low_frequency_noises.g + low_frequency_noises.b + low_frequency_noises.a) / 4.0);
 		
 
 		//Lets sample the coverage here 
-		float _CoverageScale = 2;
-		float2 unit = ray.xz * _CoverageScale;
-			float2 uv = unit * 0.5 + 0.5;
-			//uv += _CoverageOffset;
+		//float2 unit = ray.xz * _CoverageScale;
+		//float2 uv = unit * 0.5 + 0.5;
+		////uv += _CoverageOffset;
 
-			float depth = distance( ray, _CameraPosition) / _MaxDistance;
-			float4 weather_data = tex2Dlod( WeatherTexture, float4( uv, 0.0, 0.0));
-
+		//float depth = distance( ray, _CameraPosition) / _MaxDistance;
+		//float4 weather_data = tex2Dlod( WeatherTexture, float4( uv, 0.0, 0.0));
+		float4 weather_data = SampleCoverage(ray,ray.y);
 
 		//We not create a new gradient based on our three predefined gradients and the coverage to get our cloud type
 		float4 gradient = Lerp3(_Gradient3,
@@ -209,6 +241,7 @@ Shader "Hidden/kode80/HorizonClouds"
 											
 		//Before moving on, here we quickly sample the weather texture, converting it to a float3, just to get it out of the way
 		//float3 weather_data = tex2Dlod(WeatherTexture, test);
+		//low_frequency_noises = saturate(low_frequency_noises - (1.0 - FLOAT4_COVERAGE(weather_data))) * FLOAT4_COVERAGE(weather_data);
 
 		//Here we make an FBM out of the 3 worley noises found in the GBA channels of the low_frequency_noises.
 		//We will be using this FBM to add detail to the low-frequency Perlin-Worley noise (the R channel)
@@ -219,7 +252,7 @@ Shader "Hidden/kode80/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient = GetDensityHeightGradientScalar(ray);
+		float4 density_height_gradient =GradientStep(ray.y,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -241,7 +274,7 @@ Shader "Hidden/kode80/HorizonClouds"
 		base_cloud_with_coverage *= cloud_coverage;
 
 		//Here is return the cloud. Duh. 
-		return base_cloud_with_coverage;
+		return base_cloud;
 
 
 		//Final steps, namely Part 3 (There is also a super short part 4 afterwards, no biggie.) 
@@ -280,28 +313,24 @@ Shader "Hidden/kode80/HorizonClouds"
 	//Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
-		
+		fixed4 color = half4( 0.0, 0.0, 0.0, 0.0);
+		float3 rayDirection = normalize( i.cameraRay);
+
+
 		float2 uv = (i.uv - 0.5) * _FieldOfView;
 		uv.x *= _AspectRatio;
 
-		float3 pos = _CamPos;
-		float3 ray = _CamUp * uv.y + _CamRight * uv.x + _CamForward;
-		float3 rayDirection = normalize(i.cameraRay);
-		float3 color = float4(0,0,0,0);
-		float _EarthRadius = 30000;
-		float _StartHeight = 1000;
-		float _RayStepLength = 200;
-		if( ray.y > _RayMinimumY)
+		if( rayDirection.y > _RayMinimumY)
 		{
 		// So now we have a position, and a ray defined for our current fragment, that matches the field of view and aspect ratio of the camera. 
 		// We can now start iterating and creating our clouds. 
 		// We will not be ray-marching twoards any distance field at this point in time.
 		// pos is our original position, and p is our current position which we are going to be using later on.
-		float3 p = pos;
 		// For each iteration, we read from our SampleCloudDensity function the density of our current position, and add it to this density variable.
-		float density = SampleCloudDensity(ray, _WeatherTexture);
+		float cosAngle = dot( rayDirection, -_LightDirection);
+		float density = SampleCloudDensity(rayDirection);
 		float3 rayStep = rayDirection * _RayStepLength;
-		float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, pos, rayDirection);
+		float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CamPos, rayDirection);
 
 		for (float i = 0; i < _Iterations; i++)
 		{
@@ -316,7 +345,8 @@ Shader "Hidden/kode80/HorizonClouds"
 			// Smoothstep in shader languages interpolates between two values, given t, and returns a value between 0 and 1. 
 
 			// At each iteration, we sample the density and add it to the density variable
-			density += SampleCloudDensity(ray, _WeatherTexture);
+			density += SampleCloudDensity(ray);
+			float4 particle = float4(density,density,density,density);
 			// And then we move one step further away from the camera.
 			//p = pos + ray * f * _ViewDistance;
 			ray += rayStep;
@@ -324,12 +354,11 @@ Shader "Hidden/kode80/HorizonClouds"
 		// And here i just melted all our variables together with random numbers until I had something that looked good.
 		// You can try playing around with them too.
 		//float lightColor = saturate(dot(_WorldSpaceLightPos0, p));
-		color = _LightColor0 * _SkyColor * (_CloudColor.rgb - 0.5) * (density / _Iterations) * 20 * _CloudColor.a;
+		color = _CloudColor * density; 
+		//color = _LightColor0 * _SkyColor * (_CloudColor.rgb - 0.5) * (density / _Iterations) * 20 * _CloudColor.a;
 		}
 		// If you reach this point, allelujah!
-		return fixed4(color, 1);
-
-
+		return color;
 	}
 
 	ENDCG

@@ -439,7 +439,7 @@ namespace kode80.Clouds
 
             if (_cloudMaterial == null)
             {
-                _cloudMaterial = new Material(Shader.Find("Hidden/kode80/HorizonClouds"));
+                _cloudMaterial = new Material(Shader.Find("Custom/P5/HorizonClouds"));
                 _cloudMaterial.hideFlags = HideFlags.HideAndDontSave;
             }
 
@@ -612,8 +612,8 @@ namespace kode80.Clouds
                 _cloudMaterial.SetFloat("_HorizonFadeScalar", horizonFade);
                 _cloudMaterial.SetFloat("_HorizonFadeStartAlpha", horizonFadeStartAlpha);
                 _cloudMaterial.SetFloat("_OneMinusHorizonFadeStartAlpha", 1.0f - horizonFadeStartAlpha);
-                _cloudMaterial.SetTexture("_Perlin3D", _perlin3D);
-                _cloudMaterial.SetTexture("_Detail3D", _detail3D);
+                _cloudMaterial.SetTexture("_PerlinWorleyNoise", _perlin3D);
+                _cloudMaterial.SetTexture("_WorleyNoise", _detail3D);
                 _cloudMaterial.SetVector("_BaseOffset", _baseOffset);
                 _cloudMaterial.SetVector("_DetailOffset", _detailOffset);
                 _cloudMaterial.SetFloat("_BaseScale", 1.0f / atmosphereEndHeight * baseScale);
