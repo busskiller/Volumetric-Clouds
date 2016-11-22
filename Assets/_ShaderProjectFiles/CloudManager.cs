@@ -439,6 +439,7 @@ namespace kode80.Clouds
 
             if (_cloudMaterial == null)
             {
+                //_cloudMaterial = new Material(Shader.Find("Hidden/kode80/VolumeClouds"));
                 _cloudMaterial = new Material(Shader.Find("Custom/P5/HorizonClouds"));
                 _cloudMaterial.hideFlags = HideFlags.HideAndDontSave;
             }

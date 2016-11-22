@@ -75,6 +75,8 @@ Shader "Custom/P5/HorizonClouds"
 	float _CloudDensity;
 	float _RayMinimumY;
 	float _BaseScale;
+	float3 _BaseOffset;
+
 	float3 _LightDirection;
 	float _HorizonCoverageStart;
 	float _HorizonCoverageEnd;
@@ -180,7 +182,7 @@ Shader "Custom/P5/HorizonClouds"
 		}
 
 				
-	inline float4 SampleCoverage( float3 ray, float csRayHeight)
+	inline float4 SampleCoverage( float3 ray)
 	{
 		float2 unit = ray.xz * _CoverageScale;
 		float2 uv = unit * 0.5 + 0.5;
@@ -188,16 +190,7 @@ Shader "Custom/P5/HorizonClouds"
 
 		float depth = distance( ray, _CameraPosition) / _MaxDistance;
 		float4 coverage = tex2Dlod(_WeatherTexture , float4( uv, 0.0, 0.0));
-		float4 coverageB = float4( 1.0, 0.0, 0.0, 0.0);
-		//coverageB.b = saturate( smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart, depth) * 2.0);
-		float alpha = smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth);
-
-		coverageB = float4( smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth),
-						0.0,
-						smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart + (_HorizonCoverageEnd - _HorizonCoverageStart) * 0.5, depth),
-						0.0);
-
-		return lerp( coverage, coverageB, alpha);
+		return coverage;
 	}
 
 	//P is either our current ray position or current camera position! 
@@ -209,7 +202,7 @@ Shader "Custom/P5/HorizonClouds"
 		//Here we  read the first 3D texture, namely the PerlinWorleyNoise
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
 		//In order, i think each of them is going to be stored in the color channels, that is Perlin-Worley in R, and GBA is Worley
-		//_Base scale will increase the size of the clouds
+		//_Base scale will increase the size of the clouds _BaseScale+_BaseOffset
 		float4 test = float4(ray , 0);
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
 
@@ -228,7 +221,7 @@ Shader "Custom/P5/HorizonClouds"
 
 		//float depth = distance( ray, _CameraPosition) / _MaxDistance;
 		//float4 weather_data = tex2Dlod( WeatherTexture, float4( uv, 0.0, 0.0));
-		float4 weather_data = SampleCoverage(ray,ray.y);
+		float4 weather_data = SampleCoverage(ray);
 
 		//We not create a new gradient based on our three predefined gradients and the coverage to get our cloud type
 		float4 gradient = Lerp3(_Gradient3,
@@ -237,7 +230,7 @@ Shader "Custom/P5/HorizonClouds"
 										FLOAT4_TYPE(weather_data));
 
 
-		low_frequency_noises *= GradientStep(ray.y,gradient);
+		low_frequency_noises *= GradientStep(ray.y, gradient);
 											
 		//Before moving on, here we quickly sample the weather texture, converting it to a float3, just to get it out of the way
 		//float3 weather_data = tex2Dlod(WeatherTexture, test);
@@ -331,11 +324,13 @@ Shader "Custom/P5/HorizonClouds"
 		float density = SampleCloudDensity(rayDirection);
 		float3 rayStep = rayDirection * _RayStepLength;
 		float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CamPos, rayDirection);
-
+		float4 particle = float4(density,density,density,density);
 		for (float i = 0; i < _Iterations; i++)
 		{
 			//float2 uv = i.uv;
-	
+			if(particle.a < 0){
+			break;
+			}
 			// f gives a number between 0 and 1.
 			// We use that to fade our clouds in and out depending on how far and close from our camera we are.
 			float f = i / _Iterations;
@@ -346,7 +341,7 @@ Shader "Custom/P5/HorizonClouds"
 
 			// At each iteration, we sample the density and add it to the density variable
 			density += SampleCloudDensity(ray);
-			float4 particle = float4(density,density,density,density);
+			particle = float4(density,density,density,density);
 			// And then we move one step further away from the camera.
 			//p = pos + ray * f * _ViewDistance;
 			ray += rayStep;
@@ -354,7 +349,7 @@ Shader "Custom/P5/HorizonClouds"
 		// And here i just melted all our variables together with random numbers until I had something that looked good.
 		// You can try playing around with them too.
 		//float lightColor = saturate(dot(_WorldSpaceLightPos0, p));
-		color = _CloudColor * density; 
+		color = _CloudColor * density + particle; 
 		//color = _LightColor0 * _SkyColor * (_CloudColor.rgb - 0.5) * (density / _Iterations) * 20 * _CloudColor.a;
 		}
 		// If you reach this point, allelujah!
