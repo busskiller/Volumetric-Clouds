@@ -1,116 +1,50 @@
 Base path: C:/Program Files/Unity/Editor/Data
 Cmd: getPlatforms
 Cmd: preprocess
-  insize=2831 outsize=531 ok=1
+  insize=2832 outsize=532 ok=1
 Cmd: preprocess
-  insize=2122 outsize=726 ok=1
+  insize=2219 outsize=762 ok=1
 Cmd: preprocess
-  insize=12239 outsize=699 ok=1
+  insize=12656 outsize=731 ok=1
 Cmd: preprocess
-  insize=2385 outsize=688 ok=1
+  insize=2493 outsize=720 ok=1
 Cmd: preprocess
-  insize=2952 outsize=1753 ok=1
+  insize=3054 outsize=1794 ok=1
 Cmd: preprocess
-  insize=3220 outsize=787 ok=1
+  insize=3355 outsize=825 ok=1
 Cmd: preprocess
-  insize=2388 outsize=676 ok=1
+  insize=2490 outsize=708 ok=1
 Cmd: preprocess
-  insize=1372 outsize=780 ok=1
-Cmd: preprocess
-  insize=12160 outsize=663 ok=1
-Cmd: preprocess
-  insize=2229 outsize=715 ok=1
-Cmd: preprocess
-  insize=12161 outsize=662 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (138): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=11799 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (138): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  error: 2 plat 4 at (259): cannot map expression to ps_4_0 instruction set\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=11799 outsize=0 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=0
-Cmd: preprocess
-  insize=12159 outsize=661 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (138): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=11797 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (138): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=11797 outsize=3198 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: preprocess
-  insize=12159 outsize=661 ok=1
-Cmd: preprocess
-  insize=12159 outsize=661 ok=1
-Cmd: preprocess
-  insize=11330 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (140): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=10968 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (140): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=10968 outsize=3198 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: preprocess
-  insize=11395 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (140): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  error: 2 plat 4 at (254): 'SampleCloudDensity': cannot implicitly convert from 'sampler2D' to 'float3'\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=11033 outsize=0 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=0
-Cmd: preprocess
-  insize=11597 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=11235 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=11235 outsize=3198 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: preprocess
-  insize=11242 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=10880 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=10880 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: preprocess
-  insize=10536 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=10174 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=10174 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: preprocess
-  insize=10422 outsize=663 ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=10060 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
-Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
-Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=10060 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
+  insize=1445 outsize=817 ok=1
 Cmd: preprocess
   insize=10508 outsize=663 ok=1
+Cmd: preprocess
+  insize=12159 outsize=661 ok=1
+Cmd: preprocess
+  insize=2330 outsize=750 ok=1
+Cmd: preprocess
+  insize=10481 outsize=663 ok=1
 Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
+  error: 1 plat 4 at (142): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
 Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=0 insize=10146 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
+  api=4 type=0 insize=10119 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
 Cmd: compileSnippet
-  error: 1 plat 4 at (143): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
+  error: 1 plat 4 at (142): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
 Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
-  api=4 type=1 insize=10146 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
+  api=4 type=1 insize=10119 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
+Cmd: preprocess
+  insize=10481 outsize=663 ok=1
+Cmd: preprocess
+  insize=10469 outsize=651 ok=1
+Cmd: preprocess
+  insize=12159 outsize=661 ok=1
+Cmd: preprocess
+  insize=10531 outsize=651 ok=1
+Cmd: compileSnippet
+  error: 1 plat 4 at (133): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Vertex program
+Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
+  api=4 type=0 insize=10181 outsize=522 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
+Cmd: compileSnippet
+  error: 1 plat 4 at (133): comma expression used where a vector constructor may have been intended; potentially unintended use of a comma expression in a variable initializer\nCompiling Fragment program
+Platform defines: UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING
+  api=4 type=1 insize=10181 outsize=802 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1

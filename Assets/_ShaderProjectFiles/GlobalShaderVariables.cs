@@ -8,7 +8,6 @@ using System.Collections;
 [RequireComponent(typeof(Camera))]
 public class GlobalShaderVariables : MonoBehaviour {
 
-    public Texture2D NoiseOffsetTexture;
 
     [HeaderAttribute("Our 3D noise textures")]
     public Texture3D LowFrequency_PerlinWorleyNoise;
@@ -30,7 +29,6 @@ public class GlobalShaderVariables : MonoBehaviour {
 
     private void Awake()
     {
-        Shader.SetGlobalTexture("_NoiseOffsets", this.NoiseOffsetTexture);
         Shader.SetGlobalTexture("_PerlinWorleyNoise", this.LowFrequency_PerlinWorleyNoise);
         Shader.SetGlobalTexture("_WorleyNoise", this.HighFrequency_WorleyNoise);
         Shader.SetGlobalTexture("_CurlNoise", this.Curl_Noise);
