@@ -325,6 +325,8 @@ Shader "Custom/P5/HorizonClouds"
 		float3 rayStep = rayDirection * _RayStepLength;
 		float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CamPos, rayDirection);
 		float4 particle = float4(density,density,density,density);
+		float rayStepScalar = 1.0;
+
 		for (float i = 0; i < _Iterations; i++)
 		{
 			//float2 uv = i.uv;
@@ -342,8 +344,20 @@ Shader "Custom/P5/HorizonClouds"
 			// At each iteration, we sample the density and add it to the density variable
 			density += SampleCloudDensity(ray);
 			particle = float4(density,density,density,density);
+
+			if(density >0 ){
+			//Optimization code we can look at that later
+			if(rayStepScalar > 1){
+			}
+			
+			}
+			//What the fuck is this value? Oh Transmittance this is related to light
+			float T = 1.0 -particle.a;
 			// And then we move one step further away from the camera.
 			//p = pos + ray * f * _ViewDistance;
+			particle.rgb*= particle.a;
+			//We multiply the negative alpha with the particle for god knows why
+			color = (1.0 - color.a) * particle + color;
 			ray += rayStep;
 		}
 		// And here i just melted all our variables together with random numbers until I had something that looked good.
