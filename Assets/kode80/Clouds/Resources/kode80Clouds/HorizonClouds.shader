@@ -81,6 +81,10 @@ Shader "Custom/P5/HorizonClouds"
 	float _HorizonCoverageStart;
 	float _HorizonCoverageEnd;
 	float _CoverageOffset;
+	float4 _CloudHeightGradient1;				// x,y,z,w = 4 positions of a black,white,white,black gradient
+	float4 _CloudHeightGradient2;				// x,y,z,w = 4 positions of a black,white,white,black gradient
+	float4 _CloudHeightGradient3;				// x,y,z,w = 4 positions of a black,white,white,black gradient
+			
 	#define FLOAT4_TYPE( f)		f.b
 	#define FLOAT4_COVERAGE( f)	f.r
 	#define FLOAT4_RAIN( f)		f.g
@@ -187,10 +191,20 @@ Shader "Custom/P5/HorizonClouds"
 		float2 unit = ray.xz * _CoverageScale;
 		float2 uv = unit * 0.5 + 0.5;
 		uv += _CoverageOffset;
+						float depth = distance( ray, _CameraPosition) / _MaxDistance;
 
-		float depth = distance( ray, _CameraPosition) / _MaxDistance;
-		float4 coverage = tex2Dlod(_WeatherTexture , float4( uv, 0.0, 0.0));
+		float4 coverageB = float4( 1.0, 0.0, 0.0, 0.0);
+		//coverageB.b = saturate( smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart, depth) * 2.0);
+		float alpha = smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth);
+		float4 coverage = tex2Dlod( _WeatherTexture, float4( uv, 0.0, 0.0));
 		return coverage;
+
+				//coverageB = float4( smoothstep( _HorizonCoverageStart, _HorizonCoverageEnd, depth),
+				//			   0.0,
+				//			   smoothstep( _HorizonCoverageEnd, _HorizonCoverageStart + (_HorizonCoverageEnd - _HorizonCoverageStart) * 0.5, depth),
+				//			   0.0);
+
+				//return lerp( coverage, coverageB, alpha);
 	}
 
 	//P is either our current ray position or current camera position! 
@@ -203,7 +217,7 @@ Shader "Custom/P5/HorizonClouds"
 		//As stated in the book, this texture consists of 1 Perlin-Worley noise & 3 Worley noise
 		//In order, i think each of them is going to be stored in the color channels, that is Perlin-Worley in R, and GBA is Worley
 		//_Base scale will increase the size of the clouds _BaseScale+_BaseOffset
-		float4 test = float4(ray , 0);
+		float4 test = float4(ray, 0);
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test);
 
 
@@ -224,13 +238,12 @@ Shader "Custom/P5/HorizonClouds"
 		float4 weather_data = SampleCoverage(ray);
 
 		//We not create a new gradient based on our three predefined gradients and the coverage to get our cloud type
-		float4 gradient = Lerp3(_Gradient3,
-										_Gradient2,
-										_Gradient1,
+		float4 gradient = Lerp3(_CloudHeightGradient3,
+										_CloudHeightGradient2,
+										_CloudHeightGradient1,
 										FLOAT4_TYPE(weather_data));
-
-
-		low_frequency_noises *= GradientStep(ray.y, gradient);
+	
+		low_frequency_noises *= GradientStep(ray.y, gradient)* noise;
 											
 		//Before moving on, here we quickly sample the weather texture, converting it to a float3, just to get it out of the way
 		//float3 weather_data = tex2Dlod(WeatherTexture, test);
@@ -325,12 +338,14 @@ Shader "Custom/P5/HorizonClouds"
 		float3 rayStep = rayDirection * _RayStepLength;
 		float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CamPos, rayDirection);
 		float4 particle = float4(density,density,density,density);
+		
 		float rayStepScalar = 1.0;
-
+		float zeroThreshold = 4.0;
+		float zeroAccumulator = 0.0;
 		for (float i = 0; i < _Iterations; i++)
 		{
 			//float2 uv = i.uv;
-			if(particle.a < 0){
+			if(particle.a <= 0){
 			break;
 			}
 			// f gives a number between 0 and 1.
@@ -346,20 +361,29 @@ Shader "Custom/P5/HorizonClouds"
 			particle = float4(density,density,density,density);
 
 			if(density >0 ){
-			//Optimization code we can look at that later
-			if(rayStepScalar > 1){
+				zeroAccumulator = 0;
+				//Optimization code we can look at that later
+				if(rayStepScalar > 1){
+					}
+					ray -= rayStep * rayStepScalar;
+								i -= rayStepScalar;
+					density +=SampleCloudDensity(ray);
+					particle = float4( density, density, density, density);
+					}
+				//What the fuck is this value? Oh Transmittance this is related to light
+				float T = 1.0 -particle.a;
+				//p = pos + ray * f * _ViewDistance;
+				particle.rgb*= particle.a;
+				//We multiply the negative alpha with the particle for god knows why
+				zeroAccumulator += float( density <= 0.0);
+				rayStepScalar = 1.0 + step( zeroThreshold, zeroAccumulator) * 0.0;
+				i+= rayStepScalar;
+				color = T * particle + color;
+				// And then we move one step further away from the camera.
+				ray += rayStep* rayStepScalar;
 			}
-			
-			}
-			//What the fuck is this value? Oh Transmittance this is related to light
-			float T = 1.0 -particle.a;
-			// And then we move one step further away from the camera.
-			//p = pos + ray * f * _ViewDistance;
-			particle.rgb*= particle.a;
-			//We multiply the negative alpha with the particle for god knows why
-			color = (1.0 - color.a) * particle + color;
-			ray += rayStep;
-		}
+
+
 		// And here i just melted all our variables together with random numbers until I had something that looked good.
 		// You can try playing around with them too.
 		//float lightColor = saturate(dot(_WorldSpaceLightPos0, p));

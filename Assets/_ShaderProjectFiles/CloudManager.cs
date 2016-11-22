@@ -164,6 +164,7 @@ namespace kode80.Clouds
         public FullScreenQuad fullScreenQuad { get { return _fullScreenQuad; } }
 
         public Shader ourShader;
+        public Texture2D _weatherTexture2D;
         void OnEnable()
         {
             Camera.onPreCull += CloudsOnPreCull;
