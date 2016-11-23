@@ -164,6 +164,7 @@
     <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Free License.txt" />
     <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Readme.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Utilities\Utilities Readme.txt" />
+    <None Include="Assets\_ShaderProjectFiles\HorizonClouds.shader" />
     <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
     <None Include="Assets\_ShaderProjectFiles\VolumeCloudsCommon.cginc" />
     <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
