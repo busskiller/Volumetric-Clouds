@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/kode80/Clouds/Examples/Demo/kode80CloudsDemoScene.unity
+- path: Assets/_ShaderProjectFiles/TestScene_1.unity
   isLoaded: 1
   isActive: 1
