@@ -163,7 +163,17 @@ Shader "Custom/P5/HorizonClouds"
 	{
 		return smoothstep(gradient.x, gradient.y, a) - smoothstep(gradient.z, gradient.w, a);
 	}
-
+	inline float Lerp3( float v0, float v1, float v2, float a)
+	{
+		return a < 0.5 ? lerp( v0, v1, a * 2.0) : lerp( v1, v2, (a-0.5) * 2.0);
+	}
+	inline float4 Lerp3( float4 v0, float4 v1, float4 v2, float a)
+	{
+		return float4( Lerp3( v0.x, v1.x, v2.x, a),
+						Lerp3( v0.y, v1.y, v2.y, a),
+						Lerp3( v0.z, v1.z, v2.z, a),
+						Lerp3( v0.w, v1.w, v2.w, a));
+	}
 	//This function is used to figure out which clouds should be drawn and so forth
 	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
 	//This function samples the B channel (Cloud type) using the ray position. 
@@ -176,10 +186,14 @@ Shader "Custom/P5/HorizonClouds"
 		float gradient2 = DensityHeightFunction(p.y, _Gradient2);
 		float gradient3 = DensityHeightFunction(p.y, _Gradient3);
 
-		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
-		float weightedSum = 0;
+		//float weightedSum  = Lerp3(gradient3,gradient2,gradient1,FLOAT4_TYPE(weather_data));
+		float4 weightedSum = float4(FLOAT4_TYPE(weather_data),gradient1,gradient2,gradient3);
 
-		return weightedSum;
+		//float weightedSum = FLOAT4_TYPE(weather_data) < 0.5 ? lerp( v0, v1, FLOAT4_TYPE(weather_data) * 2.0) : lerp( v1, v2, (FLOAT4_TYPE(weather_data)-0.5) * 2.0);
+		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
+		//float weightedSum = 0;
+
+		return length(weightedSum);
 	}
 
 	float4 GetDensityHeightGradientScalar(float p) {
@@ -193,17 +207,7 @@ Shader "Custom/P5/HorizonClouds"
 
 		return weightedSum;
 	}
-	inline float Lerp3( float v0, float v1, float v2, float a)
-			{
-				return a < 0.5 ? lerp( v0, v1, a * 2.0) : lerp( v1, v2, (a-0.5) * 2.0);
-			}
-	inline float4 Lerp3( float4 v0, float4 v1, float4 v2, float a)
-		{
-			return float4( Lerp3( v0.x, v1.x, v2.x, a),
-							Lerp3( v0.y, v1.y, v2.y, a),
-							Lerp3( v0.z, v1.z, v2.z, a),
-							Lerp3( v0.w, v1.w, v2.w, a));
-		}
+
 	inline float GradientStep( float a, float4 gradient)
 		{
 			return smoothstep( gradient.x, gradient.y, a) - smoothstep( gradient.z, gradient.w, a);
@@ -253,13 +257,13 @@ Shader "Custom/P5/HorizonClouds"
 		float4 weather_data = coverage;
 
 		//We not create a new gradient based on our three predefined gradients and the coverage to get our cloud type
-		float4 gradient = Lerp3(_CloudHeightGradient3,
-										_CloudHeightGradient2,
-										_CloudHeightGradient1,
-										FLOAT4_TYPE(weather_data));
+		//float4 gradient = Lerp3(_CloudHeightGradient3,
+		//								_CloudHeightGradient2,
+		//								_CloudHeightGradient1,
+		//								FLOAT4_TYPE(weather_data));
 	
 
-		low_frequency_noises *= GradientStep(csRayHeight, gradient);
+		//low_frequency_noises *= GradientStep(csRayHeight, gradient);
 					
 		//Before moving on, here we quickly sample the weather texture, converting it to a float3, just to get it out of the way
 
@@ -272,7 +276,7 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient =GradientStep(csRayHeight,gradient);
+		float4 density_height_gradient =  GetDensityHeightGradientForPoint(ray,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -398,9 +402,10 @@ Shader "Custom/P5/HorizonClouds"
 					float T = 1.0 -particle.a;
 					//p = pos + ray * f * _ViewDistance;
 					particle.a = 1.0- T;
-					particle.rgb = _LightColor0;
+					particle.rgb = _LightColor0 * clamp(cosAngle,0.3,1);
 					particle.rgb*= particle.a;
 					//We multiply the negative alpha with the particle for god knows why
+					//color.rgb
 					color = (1.0 - color.a) * particle + color;
 					// And then we move one step further away from the camera.
 				}
