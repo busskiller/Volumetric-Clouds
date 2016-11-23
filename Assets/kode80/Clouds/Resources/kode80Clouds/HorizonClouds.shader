@@ -20,13 +20,8 @@ Shader "Custom/P5/HorizonClouds"
 		_Iterations("Iterations", Range(0, 200)) = 100
 		// How long through space we should step
 		_ViewDistance("View Distance", Range(0, 5)) = 2
-		// Essentially the background color
-		_SkyColor("Sky Color", Color) = (0.176, 0.478, 0.871, 1)
-		// Cloud color
-		_CloudColor("Cloud Color", Color) = (1,1,1, 1)
-		// How dense our clouds should be
-		_CloudDensity("Cloud Density", Range(0, 1)) = 0.5
 
+		// The height of our horizon
 		_RayMinimumY("Horizon height", float) = 30
 	}
 
@@ -65,8 +60,6 @@ Shader "Custom/P5/HorizonClouds"
 
 	//Our defined local properties
 	int _Iterations;
-	float3 _SkyColor;
-	float4 _CloudColor;
 	float _ViewDistance;
 	float _CloudDensity;
 	float _RayMinimumY;
@@ -163,10 +156,15 @@ Shader "Custom/P5/HorizonClouds"
 	{
 		return smoothstep(gradient.x, gradient.y, a) - smoothstep(gradient.z, gradient.w, a);
 	}
+	
+
+	//Hm....
 	inline float Lerp3( float v0, float v1, float v2, float a)
 	{
 		return a < 0.5 ? lerp( v0, v1, a * 2.0) : lerp( v1, v2, (a-0.5) * 2.0);
 	}
+
+	//Hm....
 	inline float4 Lerp3( float4 v0, float4 v1, float4 v2, float a)
 	{
 		return float4( Lerp3( v0.x, v1.x, v2.x, a),
@@ -174,6 +172,8 @@ Shader "Custom/P5/HorizonClouds"
 						Lerp3( v0.z, v1.z, v2.z, a),
 						Lerp3( v0.w, v1.w, v2.w, a));
 	}
+
+
 	//This function is used to figure out which clouds should be drawn and so forth
 	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
 	//This function samples the B channel (Cloud type) using the ray position. 
@@ -333,12 +333,17 @@ Shader "Custom/P5/HorizonClouds"
 		*/
 
 	}
-		inline float NormalizedAtmosphereY( float3 ray)
-			{
-				float y = length( ray) - _EarthRadius - _StartHeight;
-				return y / _AtmosphereThickness;
-			}
+	
+
+	//Hm....
+	inline float NormalizedAtmosphereY( float3 ray)
+	{
+		float y = length( ray) - _EarthRadius - _StartHeight;
+		return y / _AtmosphereThickness;
+	}
 			
+
+
 	//Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
