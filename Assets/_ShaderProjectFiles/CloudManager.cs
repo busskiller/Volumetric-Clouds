@@ -625,6 +625,8 @@ namespace kode80.Clouds
                 _cloudMaterial.SetVector("_CloudHeightGradient2", _cloudGradientVector2);
                 _cloudMaterial.SetVector("_CloudHeightGradient3", _cloudGradientVector3);
                 _cloudMaterial.SetTexture("_Coverage", cloudCoverage);
+                _cloudMaterial.SetTexture("_WeatherTexture", cloudCoverage);
+
                 _cloudMaterial.SetVector("_LightDirection", lightDirection);
 
                 _cloudMaterial.SetColor("_LightColor", sunLight.color);
