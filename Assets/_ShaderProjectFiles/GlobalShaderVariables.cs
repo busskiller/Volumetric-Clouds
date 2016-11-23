@@ -26,18 +26,110 @@ public class GlobalShaderVariables : MonoBehaviour {
     private Vector4 _cloudGradientVector2;
     private Vector4 _cloudGradientVector3;
 
+    public Material _cloudMaterial;
 
     private void Awake()
     {
+        _camera = Camera.main;
+       // CreateRenderTextures();
+        GetTextures();
         Shader.SetGlobalTexture("_PerlinWorleyNoise", this.LowFrequency_PerlinWorleyNoise);
         Shader.SetGlobalTexture("_WorleyNoise", this.HighFrequency_WorleyNoise);
         Shader.SetGlobalTexture("_CurlNoise", this.Curl_Noise);
         Shader.SetGlobalTexture("_WeatherTexture", this.Weather_Texture);
-
+        thisShader = _cloudMaterial.shader;
 
         UpdateGradientVectors();
     }
 
+    private Camera _camera;
+    private RenderTexture _subFrame;
+    private RenderTexture _previousFrame;
+    public RenderTexture currentFrame { get { return _previousFrame; } }
+    private bool _isFirstFrame;
+
+    private kode80.Clouds.SharedProperties _cloudsSharedProperties;
+    public kode80.Clouds.SharedProperties cloudsSharedProperties { get { return _cloudsSharedProperties; } }
+
+    private Shader thisShader;
+
+    private void CreateRenderTextures()
+    {
+        if (_subFrame == null && _camera != null)
+        {
+            RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+            _subFrame = new RenderTexture(_cloudsSharedProperties.subFrameWidth,
+                _cloudsSharedProperties.subFrameHeight, 0, format, RenderTextureReadWrite.Linear);
+            _subFrame.filterMode = FilterMode.Bilinear;
+            _subFrame.hideFlags = HideFlags.HideAndDontSave;
+            _isFirstFrame = true;
+        }
+
+        if (_previousFrame == null && _camera != null)
+        {
+            RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+            _previousFrame = new RenderTexture(_cloudsSharedProperties.frameWidth,
+                _cloudsSharedProperties.frameHeight, 0, format, RenderTextureReadWrite.Linear);
+            _previousFrame.filterMode = FilterMode.Bilinear;
+            _previousFrame.hideFlags = HideFlags.HideAndDontSave;
+            _isFirstFrame = true;
+        }
+    }
+
+
+    void GetTextures()
+    {
+        if (LowFrequency_PerlinWorleyNoise == null)
+        {
+            LowFrequency_PerlinWorleyNoise = Load3DTexture("kode80Clouds/noise", 128, TextureFormat.RGBA32);
+            _cloudMaterial.SetTexture("_PerlinWorleyNoise", LowFrequency_PerlinWorleyNoise);
+        }
+
+        if (HighFrequency_WorleyNoise == null)
+        {
+            HighFrequency_WorleyNoise = Load3DTexture("kode80Clouds/noise_detail", 32, TextureFormat.RGB24);
+            _cloudMaterial.SetTexture("_WorleyNoise", HighFrequency_WorleyNoise);
+
+        }
+
+        if (Curl_Noise == null)
+        {
+            Curl_Noise = Resources.Load("kode80Clouds/CurlNoise") as Texture2D;
+            _cloudMaterial.SetTexture("_CurlNoise", Curl_Noise);
+
+        }
+    }
+
+    void SetShaderVariables()
+    {
+       _cloudMaterial.SetFloat("_MaxDistance", 400);
+    }
+
+    private Texture3D Load3DTexture(string name, int size, TextureFormat format)
+    {
+        int count = size * size * size;
+        TextAsset asset = Resources.Load<TextAsset>(name);
+        Color32[] colors = new Color32[count];
+        byte[] bytes = asset.bytes;
+        int j = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            colors[i].r = bytes[j++];
+            colors[i].g = bytes[j++];
+            colors[i].b = bytes[j++];
+            colors[i].a = format == TextureFormat.RGBA32 ? bytes[j++] : (byte)255;
+        }
+
+        Texture3D texture3D = new Texture3D(size, size, size, format, true);
+        texture3D.hideFlags = HideFlags.HideAndDontSave;
+        texture3D.wrapMode = TextureWrapMode.Repeat;
+        texture3D.filterMode = FilterMode.Bilinear;
+        texture3D.SetPixels32(colors, 0);
+        texture3D.Apply();
+
+        return texture3D;
+    }
 
     private void Reset()
     {

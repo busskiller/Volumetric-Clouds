@@ -64,10 +64,24 @@
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
+    <Reference Include="CatlikeCoding.Noise">
+      <HintPath>Assets\Plugins\Catlike Coding\Noise\CatlikeCoding.Noise.dll</HintPath>
+    </Reference>
+    <Reference Include="CatlikeCoding.NumberFlow">
+      <HintPath>Assets\Plugins\Catlike Coding\NumberFlow Free\CatlikeCoding.NumberFlow.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Volumetric-Clouds.CSharp.Plugins.csproj">
+      <Project>{E53F27A7-BA71-93C2-B37C-04FBE9889DD4}</Project>
+      <Name>Volumetric-Clouds.CSharp.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\_ShaderProjectFiles\CloudManager.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\GlobalShaderVariables.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\RenderMaterialFullscreen.cs" />
+    <Compile Include="Assets\_ShaderProjectFiles\Texture3dConverter.cs" />
     <Compile Include="Assets\kode80\Clouds\Examples\Demo\Scripts\FlyCamera.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\BehaviorStateStore.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\CrepuscularRays.cs" />
@@ -84,8 +98,20 @@
     <Compile Include="Assets\kode80\UnityTools\EditorTools\Scripts\RecordVideo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Plugins\Catlike Coding\Catlike Coding Readme.txt" />
+    <None Include="Assets\Plugins\Catlike Coding\Noise\Example\Noise Example.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\Noise\Noise Readme.txt" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\Examples\Gallery\Materials\Plaster.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\Examples\Gallery\Materials\Pulse.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\Examples\Gallery\Materials\Spiral.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\Examples\Terrain\Materials\Terrain.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\Examples\Terrain\Materials\Water.shader" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Free License.txt" />
+    <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Readme.txt" />
+    <None Include="Assets\Plugins\Catlike Coding\Utilities\Utilities Readme.txt" />
     <None Include="Assets\_ShaderProjectFiles\HorizonClouds.shader" />
     <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
+    <None Include="Assets\_ShaderProjectFiles\VolumeCloudsCommon.cginc" />
     <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
     <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
     <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
@@ -94,6 +120,7 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudShadowPass.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudsCrepuscularRays.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeCloudsCommon.cginc" />

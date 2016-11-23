@@ -202,24 +202,6 @@
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/*
 	float distFunc(float3 pos)
 	{
