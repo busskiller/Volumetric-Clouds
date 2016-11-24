@@ -81,6 +81,7 @@
     <Compile Include="Assets\_ShaderProjectFiles\CloudManager.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\GlobalShaderVariables.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\RenderMaterialFullscreen.cs" />
+    <Compile Include="Assets\_ShaderProjectFiles\SunMovement.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\Texture3dConverter.cs" />
     <Compile Include="Assets\kode80\Clouds\Examples\Demo\Scripts\FlyCamera.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\BehaviorStateStore.cs" />
@@ -109,7 +110,6 @@
     <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Free License.txt" />
     <None Include="Assets\Plugins\Catlike Coding\NumberFlow Free\NumberFlow Readme.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Utilities\Utilities Readme.txt" />
-    <None Include="Assets\_ShaderProjectFiles\HorizonClouds.shader" />
     <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
     <None Include="Assets\_ShaderProjectFiles\VolumeCloudsCommon.cginc" />
     <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />

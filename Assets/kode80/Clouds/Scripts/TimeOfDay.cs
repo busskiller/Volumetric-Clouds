@@ -23,7 +23,7 @@ namespace kode80.Clouds
 	public class TimeOfDay : MonoBehaviour 
 	{
 		public Material proceduralSkybox;
-		public kode80Clouds clouds;
+		public CloudManager clouds;
 		public Light sun;
 
 		public TimeOfDayKeyFrame[] keyFrames;

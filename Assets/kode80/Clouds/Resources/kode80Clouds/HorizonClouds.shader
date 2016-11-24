@@ -1,4 +1,4 @@
-﻿//***************************************************
+﻿	//***************************************************
 //
 //  Author: Ben Hopkins
 //  Copyright (C) 2016 kode80 LLC, 
@@ -16,18 +16,7 @@ Shader "Custom/P5/HorizonClouds"
 {
 
 	Properties{
-		// How many iterations we should step through space
-		_Iterations("Iterations", Range(0, 200)) = 100
-		// How long through space we should step
-		_ViewDistance("View Distance", Range(0, 5)) = 2
-		// Essentially the background color
-		_SkyColor("Sky Color", Color) = (0.176, 0.478, 0.871, 1)
-		// Cloud color
-		_CloudColor("Cloud Color", Color) = (1,1,1, 1)
-		// How dense our clouds should be
-		_CloudDensity("Cloud Density", Range(0, 1)) = 0.5
-
-		_RayMinimumY("Horizon height", float) = 30
+		_MainTex ("Base (RGB)", 2D) = "white" {}
 	}
 
 	SubShader{ 
@@ -39,6 +28,8 @@ Shader "Custom/P5/HorizonClouds"
 	CGPROGRAM
 	#pragma vertex vert
 	#pragma fragment frag
+	#pragma target 3.0
+	#pragma exclude_renderers d3d9
 	#include "UnityCG.cginc"
 	#include "VolumeCloudsCommon.cginc"
 
@@ -236,7 +227,7 @@ Shader "Custom/P5/HorizonClouds"
 	}
 
 	//P is either our current ray position or current camera position! 
-	float SampleCloudDensity(float3 ray, float4 coverage, float csRayHeight) 
+	float SampleCloudDensity(float3 ray, float4 weather_data, float csRayHeight) 
 	{
 		////
 		////PART 1
@@ -253,8 +244,6 @@ Shader "Custom/P5/HorizonClouds"
 
 
 		low_frequency_noises *= GetDensityHeightGradientScalar(csRayHeight);
-
-		float4 weather_data = coverage;
 
 		//We not create a new gradient based on our three predefined gradients and the coverage to get our cloud type
 		//float4 gradient = Lerp3(_CloudHeightGradient3,
@@ -298,12 +287,12 @@ Shader "Custom/P5/HorizonClouds"
 		//base_cloud_with_coverage *= cloud_coverage;
 
 		//Here is return the cloud. Duh. 
-		return base_cloud_with_coverage;
+		//return base_cloud_with_coverage;
 
 
 		//Final steps, namely Part 3 (There is also a super short part 4 afterwards, no biggie.) 
 		//Incomplete as I cant figure out the damn mix function they use! It is also here that the curl noise comes into play!
-		/*
+		
 
 		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
 		//We use the curl noise to distort the sample coordinate at the bottom of the clouds
@@ -312,13 +301,13 @@ Shader "Custom/P5/HorizonClouds"
 		//We get the height fraction (the position of the current sample) to use it when blending the different noises over height
 		//We use this together with the FBM we'll make in a momement to transition between cloud shapes
 		float inCloudMinMax = 1;
-		float height_fraction = GetHeightFractionForPoint(p, inCloudMinMax);
+		float height_fraction = GetHeightFractionForPoint(ray, inCloudMinMax);
 		
 		//Then we sample the curl noise...:
 		float2 curl_noise = tex2Dlod(_CurlNoise, test);
 		//and...  apply it to the current position
 		float2 currentPosition;
-		currentPosition.xy = p.xy;
+		currentPosition.xy = ray.xy;
 		currentPosition.xy += curl_noise.xy * (1.0 - height_fraction);
 
 		//We  build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
@@ -330,14 +319,16 @@ Shader "Custom/P5/HorizonClouds"
 		//The transition magic over height happens here:
 		float hight_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 90.0));
 
-		*/
+		float final_cloud = Remap(base_cloud_with_coverage,high_freq_noise_modifier ∗ 0 .2 , 1 .0 , 0 .0 , 1 . 0);
+		
+		return final_cloud;
 
 	}
-		inline float NormalizedAtmosphereY( float3 ray)
-			{
-				float y = length( ray) - _EarthRadius - _StartHeight;
-				return y / _AtmosphereThickness;
-			}
+	inline float NormalizedAtmosphereY( float3 ray)
+		{
+			float y = length( ray) - _EarthRadius - _StartHeight;
+			return y / _AtmosphereThickness;
+		}
 			
 	//Fragment shader
 	fixed4 frag(v2f i) : SV_Target
@@ -364,7 +355,7 @@ Shader "Custom/P5/HorizonClouds"
 			float rayStepScalar = 1.0;
 			float zeroThreshold = 4.0;
 			float zeroAccumulator = 0.0;
-			for (float i = 0; i < _Iterations; i++)
+			for (float i = 0; i < _MaxIterations; i++)
 			{
 				//float2 uv = i.uv;
 				if(color.a >= 1){
@@ -402,11 +393,14 @@ Shader "Custom/P5/HorizonClouds"
 					float T = 1.0 -particle.a;
 					//p = pos + ray * f * _ViewDistance;
 					particle.a = 1.0- T;
-					particle.rgb = _LightColor0 * clamp(cosAngle,0.3,1);
+					float bottomShade = particle.y ;
+					float topShade = atmosphereY;//saturate(particle.y) ;
+					particle.rgb *= _LightColor0  *topShade +bottomShade;
 					particle.rgb*= particle.a;
+
 					//We multiply the negative alpha with the particle for god knows why
 					//color.rgb
-					color = (1.0 - color.a) * particle + color;
+					color = (1.0 - color.a) * particle + color ;
 					// And then we move one step further away from the camera.
 				}
 
