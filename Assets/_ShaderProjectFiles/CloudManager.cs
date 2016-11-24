@@ -164,15 +164,24 @@ namespace kode80.Clouds
         public FullScreenQuad fullScreenQuad { get { return _fullScreenQuad; } }
 
         public Shader ourShader;
+
         public Texture2D _weatherTexture2D;
+
+
+        //OnEnable is called everytime the camera object goes from inactive to active object state
         void OnEnable()
         {
+            //Check function comments
             Camera.onPreCull += CloudsOnPreCull;
+
+            //Check function comments
             CreateMaterialsIfNeeded();
+
             CreateRenderTextures();
             CreateFullscreenQuad();
         }
 
+        //OnDrawGizmoz basically makes the gizmos visible, but only in scene view! You can also customize them etc.
         void OnDrawGizmos()
         {
             float earthRadius = cloudsSharedProperties.earthRadius;
@@ -208,6 +217,7 @@ namespace kode80.Clouds
                              position + new Vector3(0.0f, 0.0f, distant));
         }
 
+        //OnDisable is called when the camera becoves inactive or destroyed
         void OnDisable()
         {
             Camera.onPreCull -= CloudsOnPreCull;
@@ -216,6 +226,7 @@ namespace kode80.Clouds
             DestroyFullscreenQuad();
         }
 
+        //OnValidate is called everytime something changes in the inspector. Neat.
         void OnValidate()
         {
             if (_cloudsSharedProperties == null)
@@ -234,6 +245,7 @@ namespace kode80.Clouds
             }
         }
 
+        //Reset basically resets stuff. It is only called and/or used in editor mode.
         void Reset()
         {
             targetCamera = Camera.main;
@@ -249,6 +261,7 @@ namespace kode80.Clouds
             UpdateSharedFromPublicProperties();
         }
 
+        //Start... does it need explanation?
         void Start()
         {
             SetCamera(targetCamera);
@@ -259,6 +272,7 @@ namespace kode80.Clouds
             CreateFullscreenQuad();
         }
 
+        //Awake is called before start and is used to initialize itself
         void Awake()
         {
             UpdateGradientVectors();
@@ -267,6 +281,9 @@ namespace kode80.Clouds
             UpdateSharedFromPublicProperties();
         }
 
+
+
+        //Used to animate our lovely clouds by offsetting three variables: _coverage, base (what is this?) and level of detail
         public void UpdateAnimatedProperties()
         {
             if (animationScale != 0.0f)
@@ -277,17 +294,23 @@ namespace kode80.Clouds
             }
         }
 
+        //Used to cull or show visibility of clouds to the camera
         void CloudsOnPreCull(Camera currentCamera)
         {
+
+            //If our _camera variable is set to our camera in the scene call the following to functions
             bool validCamera = _camera != null && currentCamera == _camera;
 
             if (validCamera)
             {
+                //Used for animation purposes
                 UpdateAnimatedProperties();
+
                 RenderClouds();
             }
         }
 
+        //Used to change couple of render variables via the Clouds namespace thingy. 
         public void CopyPropertiesToRenderSettings(Clouds.RenderSettings settings)
         {
             settings.sunColor = sunLight.color;
@@ -296,14 +319,7 @@ namespace kode80.Clouds
             settings.cloudTopColor = cloudTopColor;
         }
 
-        public void CopyRenderSettingsToProperties(Clouds.RenderSettings settings)
-        {
-            sunLight.color = settings.sunColor;
-            sunLight.transform.eulerAngles = settings.sunDirection;
-            cloudBaseColor = settings.cloudBaseColor;
-            cloudTopColor = settings.cloudTopColor;
-        }
-
+        //Used to set  the private camera variable to the same as the public one. Why not just use a public one and thats it?
         public void SetCamera(Camera theCamera)
         {
             if (theCamera != _camera)
@@ -311,6 +327,291 @@ namespace kode80.Clouds
                 _camera = theCamera;
             }
         }
+
+        //Used to create our gradients. Duh!
+        private Gradient CreateCloudGradient(float position0, float position1, float position2, float position3)
+        {
+            Gradient gradient = new Gradient();
+            gradient.colorKeys = new GradientColorKey[] { new GradientColorKey(Color.black, position0),
+                                                          new GradientColorKey( Color.white, position1),
+                                                          new GradientColorKey( Color.white, position2),
+                                                          new GradientColorKey( Color.black, position3)};
+
+            return gradient;
+        }
+
+        //Used to return the gradients as Vector4 variables.  x,y,z,w = 4 positions of a black,white,white,black gradient
+        private Vector4 CloudHeightGradient(Gradient gradient)
+        {
+            int l = gradient.colorKeys.Length;
+            float a = l > 0 ? gradient.colorKeys[0].time : 0.0f;
+            float b = l > 1 ? gradient.colorKeys[1].time : a;
+            float c = l > 2 ? gradient.colorKeys[2].time : b;
+            float d = l > 3 ? gradient.colorKeys[3].time : c;
+
+            return new Vector4(a, b, c, d);
+        }
+
+        //Used to Update our vector4 representations of our gradients
+        private void UpdateGradientVectors()
+        {
+            _cloudGradientVector1 = CloudHeightGradient(cloudGradient1);
+            _cloudGradientVector2 = CloudHeightGradient(cloudGradient2);
+            _cloudGradientVector3 = CloudHeightGradient(cloudGradient3);
+        }
+
+        //Used to fill all all our shader and material variables
+        private void CreateMaterialsIfNeeded()
+        {
+            if (_randomVectors == null || _randomVectors.Length < 1)
+            {
+                _randomVectors = new Vector3[] { Random.onUnitSphere,
+                    Random.onUnitSphere,
+                    Random.onUnitSphere,
+                    Random.onUnitSphere,
+                    Random.onUnitSphere,
+                    Random.onUnitSphere};
+
+            }
+
+            //Our main shader, where the cloud modeling happens
+            if (_cloudMaterial == null)
+            {
+                //_cloudMaterial = new Material(Shader.Find("Hidden/kode80/VolumeClouds"));
+                _cloudMaterial = new Material(Shader.Find("Custom/P5/HorizonClouds"));
+                _cloudMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            //This shader combines clouds? The code in it is not long.
+            if (_cloudCombinerMaterial == null)
+            {
+                _cloudCombinerMaterial = new Material(Shader.Find("Hidden/kode80/CloudCombiner"));
+                _cloudCombinerMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            //This shader blends clouds, transparency style.
+            if (_cloudBlenderMaterial == null)
+            {
+                _cloudBlenderMaterial = new Material(Shader.Find("Hidden/kode80/CloudBlender"));
+                _cloudBlenderMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            //This shader is used to cast shadows on non cloud object. I think.
+            if (_cloudShadowPassMaterial == null)
+            {
+                _cloudShadowPassMaterial = new Material(Shader.Find("Hidden/kode80/CloudShadowPass"));
+                _cloudShadowPassMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            //Perlin noise 3D texture - but we need a perlin-worly noise combined with three worley noises
+            if (_perlin3D == null)
+            {
+                _perlin3D = Load3DTexture("kode80Clouds/noise", 128, TextureFormat.RGBA32);
+            }
+
+            //The second 3D texture. No idea whether it is worley or whatever. 
+            //In Horizon guys case, we need this to be three, high frequency worley noises at increasing frequencies
+            if (_detail3D == null)
+            {
+                _detail3D = Load3DTexture("kode80Clouds/noise_detail", 32, TextureFormat.RGB24);
+            }
+
+            //The curl texture - this we can re-use for our own purposes
+            if (_curlTexture == null)
+            {
+                _curlTexture = Resources.Load("kode80Clouds/CurlNoise") as Texture2D;
+            }
+        }
+
+        //Used to destroy all materials, and also setting them to null for some weird reason
+        private void DestroyMaterials()
+        {
+            DestroyImmediate(_cloudMaterial);
+            _cloudMaterial = null;
+
+            DestroyImmediate(_cloudCombinerMaterial);
+            _cloudCombinerMaterial = null;
+
+            DestroyImmediate(_cloudBlenderMaterial);
+            _cloudBlenderMaterial = null;
+
+            DestroyImmediate(_cloudShadowPassMaterial);
+            _cloudShadowPassMaterial = null;
+
+            DestroyImmediate(_perlin3D);
+            _perlin3D = null;
+
+            DestroyImmediate(_detail3D);
+            _detail3D = null;
+
+            Resources.UnloadAsset(_curlTexture);
+            _curlTexture = null;
+        }
+
+        //Used to find the directional light in the scene and returns it
+        private Light FindDirectionalLightInScene()
+        {
+            Light[] lights = GameObject.FindObjectsOfType<Light>();
+
+            foreach (Light light in lights)
+            {
+                if (light.type == LightType.Directional) { return light; }
+            }
+
+            return null;
+        }
+
+        //Used to set a shit ton of variables in our shader
+        private void UpdateMaterialsPublicProperties()
+        {
+            if (_cloudMaterial && _camera)
+            {
+                Vector3 lightDirection = sunLight.transform.forward;
+
+                _cloudMaterial.SetFloat("_CloudBottomFade", cloudBottomFade);
+
+                _cloudMaterial.SetFloat("_MaxIterations", maxIterations);
+                _cloudMaterial.SetFloat("_SampleScalar", sampleScalar);
+                _cloudMaterial.SetFloat("_SampleThreshold", sampleThreshold);
+                _cloudMaterial.SetFloat("_LODDistance", lodDistance);
+                _cloudMaterial.SetFloat("_RayMinimumY", horizonLevel);
+                _cloudMaterial.SetFloat("_DetailScale", detailScale);
+                _cloudMaterial.SetFloat("_ErosionEdgeSize", erosionEdgeSize);
+                _cloudMaterial.SetFloat("_CloudDistortion", cloudDistortion);
+                _cloudMaterial.SetFloat("_CloudDistortionScale", cloudDistortionScale);
+                _cloudMaterial.SetFloat("_HorizonFadeScalar", horizonFade);
+                _cloudMaterial.SetFloat("_HorizonFadeStartAlpha", horizonFadeStartAlpha);
+                _cloudMaterial.SetFloat("_OneMinusHorizonFadeStartAlpha", 1.0f - horizonFadeStartAlpha);
+                _cloudMaterial.SetTexture("_PerlinWorleyNoise", _perlin3D);
+                _cloudMaterial.SetTexture("_WorleyNoise", _detail3D);
+                _cloudMaterial.SetVector("_BaseOffset", _baseOffset);
+                _cloudMaterial.SetVector("_DetailOffset", _detailOffset);
+                _cloudMaterial.SetFloat("_BaseScale", 1.0f / atmosphereEndHeight * baseScale);
+                _cloudMaterial.SetFloat("_LightScalar", sunScalar);
+                _cloudMaterial.SetFloat("_AmbientScalar", ambientScalar);
+                _cloudMaterial.SetVector("_CloudHeightGradient1", _cloudGradientVector1);
+                _cloudMaterial.SetVector("_CloudHeightGradient2", _cloudGradientVector2);
+                _cloudMaterial.SetVector("_CloudHeightGradient3", _cloudGradientVector3);
+                _cloudMaterial.SetTexture("_Coverage", cloudCoverage);
+                _cloudMaterial.SetTexture("_WeatherTexture", cloudCoverage);
+
+                _cloudMaterial.SetVector("_LightDirection", lightDirection);
+
+                _cloudMaterial.SetColor("_LightColor", sunLight.color);
+                _cloudMaterial.SetColor("_CloudBaseColor", cloudBaseColor);
+                _cloudMaterial.SetColor("_CloudTopColor", cloudTopColor);
+
+                _cloudMaterial.SetFloat("_HorizonCoverageStart", horizonCoverageStart);
+                _cloudMaterial.SetFloat("_HorizonCoverageEnd", horizonCoverageEnd);
+
+
+                _cloudMaterial.SetFloat("_Density", density);
+                _cloudMaterial.SetFloat("_ForwardScatteringG", forwardScatteringG);
+                _cloudMaterial.SetFloat("_BackwardScatteringG", backwardScatteringG);
+                _cloudMaterial.SetFloat("_DarkOutlineScalar", darkOutlineScalar);
+
+                float atmosphereThickness = atmosphereEndHeight - atmosphereStartHeight;
+                _cloudMaterial.SetFloat("_SunRayLength", sunRayLength * atmosphereThickness);
+                _cloudMaterial.SetFloat("_ConeRadius", coneRadius * atmosphereThickness);
+                _cloudMaterial.SetFloat("_RayStepLength", atmosphereThickness / Mathf.Floor(maxIterations / 2.0f));
+
+                _cloudMaterial.SetTexture("_Curl2D", _curlTexture);
+                _cloudMaterial.SetFloat("_CoverageScale", 1.0f / _cloudsSharedProperties.maxDistance);
+                _cloudMaterial.SetVector("_CoverageOffset", _coverageOffset);
+                _cloudMaterial.SetFloat("_MaxRayDistance", _cloudsSharedProperties.maxRayDistance);
+
+                _cloudMaterial.SetVector("_Random0", _randomVectors[0]);
+                _cloudMaterial.SetVector("_Random1", _randomVectors[1]);
+                _cloudMaterial.SetVector("_Random2", _randomVectors[2]);
+                _cloudMaterial.SetVector("_Random3", _randomVectors[3]);
+                _cloudMaterial.SetVector("_Random4", _randomVectors[4]);
+                _cloudMaterial.SetVector("_Random5", _randomVectors[5]);
+            }
+        }
+
+        //This is a method used to load 3D textures. It is forexample used in the CreateMaterialsIfNeeded function
+        private Texture3D Load3DTexture(string name, int size, TextureFormat format)
+        {
+            int count = size * size * size;
+            TextAsset asset = Resources.Load<TextAsset>(name);
+            Color32[] colors = new Color32[count];
+            byte[] bytes = asset.bytes;
+            int j = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                colors[i].r = bytes[j++];
+                colors[i].g = bytes[j++];
+                colors[i].b = bytes[j++];
+                colors[i].a = format == TextureFormat.RGBA32 ? bytes[j++] : (byte)255;
+            }
+
+            Texture3D texture3D = new Texture3D(size, size, size, format, true);
+            texture3D.hideFlags = HideFlags.HideAndDontSave;
+            texture3D.wrapMode = TextureWrapMode.Repeat;
+            texture3D.filterMode = FilterMode.Bilinear;
+            texture3D.SetPixels32(colors, 0);
+            texture3D.Apply();
+
+            return texture3D;
+        }
+
+
+
+        void CreateFullscreenQuad()
+        {
+            if (Application.isPlaying && _fullScreenQuad == null)
+            {
+                GameObject quadGO = new GameObject("CloudsFullscreenQuad", typeof(FullScreenQuad));
+                quadGO.hideFlags = HideFlags.HideAndDontSave;
+                _fullScreenQuad = quadGO.GetComponent<FullScreenQuad>();
+                _fullScreenQuad.material = _cloudBlenderMaterial;
+                _fullScreenQuad.renderWhenPlaying = true;
+            }
+        }
+
+        void DestroyFullscreenQuad()
+        {
+            if (_fullScreenQuad != null)
+            {
+                DestroyImmediate(_fullScreenQuad.gameObject);
+                _fullScreenQuad = null;
+            }
+        }
+
+
+        private void CreateRenderTextures()
+        {
+            if (_subFrame == null && _camera != null)
+            {
+                RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+                _subFrame = new RenderTexture(_cloudsSharedProperties.subFrameWidth,
+                    _cloudsSharedProperties.subFrameHeight, 0, format, RenderTextureReadWrite.Linear);
+                _subFrame.filterMode = FilterMode.Bilinear;
+                _subFrame.hideFlags = HideFlags.HideAndDontSave;
+                _isFirstFrame = true;
+            }
+
+            if (_previousFrame == null && _camera != null)
+            {
+                RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+                _previousFrame = new RenderTexture(_cloudsSharedProperties.frameWidth,
+                    _cloudsSharedProperties.frameHeight, 0, format, RenderTextureReadWrite.Linear);
+                _previousFrame.filterMode = FilterMode.Bilinear;
+                _previousFrame.hideFlags = HideFlags.HideAndDontSave;
+                _isFirstFrame = true;
+            }
+        }
+
+        private void DestroyRenderTextures()
+        {
+            DestroyImmediate(_subFrame);
+            _subFrame = null;
+
+            DestroyImmediate(_previousFrame);
+            _previousFrame = null;
+        }
+
 
         public void UpdateSharedFromPublicProperties()
         {
@@ -327,13 +628,6 @@ namespace kode80.Clouds
             _cloudsSharedProperties.useFixedDimensions = renderSize == RenderSize.FixedDimensions;
             _cloudsSharedProperties.fixedWidth = fixedWidth;
             _cloudsSharedProperties.fixedHeight = fixedHeight;
-        }
-
-        private void UpdateGradientVectors()
-        {
-            _cloudGradientVector1 = CloudHeightGradient(cloudGradient1);
-            _cloudGradientVector2 = CloudHeightGradient(cloudGradient2);
-            _cloudGradientVector3 = CloudHeightGradient(cloudGradient3);
         }
 
         private int SubPixelSizeToInt(SubPixelSize size)
@@ -414,262 +708,7 @@ namespace kode80.Clouds
             _cloudBlenderMaterial.SetInt("_IsGamma", QualitySettings.activeColorSpace == ColorSpace.Gamma ? 1 : 0);
         }
 
-        private Gradient CreateCloudGradient(float position0, float position1, float position2, float position3)
-        {
-            Gradient gradient = new Gradient();
-            gradient.colorKeys = new GradientColorKey[] { new GradientColorKey(Color.black, position0),
-                                                          new GradientColorKey( Color.white, position1),
-                                                          new GradientColorKey( Color.white, position2),
-                                                          new GradientColorKey( Color.black, position3)};
-
-            return gradient;
-        }
-
-        private void CreateMaterialsIfNeeded()
-        {
-            if (_randomVectors == null || _randomVectors.Length < 1)
-            {
-                _randomVectors = new Vector3[] { Random.onUnitSphere,
-                    Random.onUnitSphere,
-                    Random.onUnitSphere,
-                    Random.onUnitSphere,
-                    Random.onUnitSphere,
-                    Random.onUnitSphere};
-
-            }
-
-            if (_cloudMaterial == null)
-            {
-                //_cloudMaterial = new Material(Shader.Find("Hidden/kode80/VolumeClouds"));
-                _cloudMaterial = new Material(Shader.Find("Custom/P5/HorizonClouds"));
-                _cloudMaterial.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (_cloudCombinerMaterial == null)
-            {
-                _cloudCombinerMaterial = new Material(Shader.Find("Hidden/kode80/CloudCombiner"));
-                _cloudCombinerMaterial.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (_cloudBlenderMaterial == null)
-            {
-                _cloudBlenderMaterial = new Material(Shader.Find("Hidden/kode80/CloudBlender"));
-                _cloudBlenderMaterial.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (_cloudShadowPassMaterial == null)
-            {
-                _cloudShadowPassMaterial = new Material(Shader.Find("Hidden/kode80/CloudShadowPass"));
-                _cloudShadowPassMaterial.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (_perlin3D == null)
-            {
-                _perlin3D = Load3DTexture("kode80Clouds/noise", 128, TextureFormat.RGBA32);
-            }
-
-            if (_detail3D == null)
-            {
-                _detail3D = Load3DTexture("kode80Clouds/noise_detail", 32, TextureFormat.RGB24);
-            }
-
-            if (_curlTexture == null)
-            {
-                _curlTexture = Resources.Load("kode80Clouds/CurlNoise") as Texture2D;
-            }
-        }
-
-        void CreateFullscreenQuad()
-        {
-            if (Application.isPlaying && _fullScreenQuad == null)
-            {
-                GameObject quadGO = new GameObject("CloudsFullscreenQuad", typeof(FullScreenQuad));
-                quadGO.hideFlags = HideFlags.HideAndDontSave;
-                _fullScreenQuad = quadGO.GetComponent<FullScreenQuad>();
-                _fullScreenQuad.material = _cloudBlenderMaterial;
-                _fullScreenQuad.renderWhenPlaying = true;
-            }
-        }
-
-        void DestroyFullscreenQuad()
-        {
-            if (_fullScreenQuad != null)
-            {
-                DestroyImmediate(_fullScreenQuad.gameObject);
-                _fullScreenQuad = null;
-            }
-        }
-
-        private Texture3D Load3DTexture(string name, int size, TextureFormat format)
-        {
-            int count = size * size * size;
-            TextAsset asset = Resources.Load<TextAsset>(name);
-            Color32[] colors = new Color32[count];
-            byte[] bytes = asset.bytes;
-            int j = 0;
-
-            for (int i = 0; i < count; i++)
-            {
-                colors[i].r = bytes[j++];
-                colors[i].g = bytes[j++];
-                colors[i].b = bytes[j++];
-                colors[i].a = format == TextureFormat.RGBA32 ? bytes[j++] : (byte)255;
-            }
-
-            Texture3D texture3D = new Texture3D(size, size, size, format, true);
-            texture3D.hideFlags = HideFlags.HideAndDontSave;
-            texture3D.wrapMode = TextureWrapMode.Repeat;
-            texture3D.filterMode = FilterMode.Bilinear;
-            texture3D.SetPixels32(colors, 0);
-            texture3D.Apply();
-
-            return texture3D;
-        }
-
-        private void DestroyMaterials()
-        {
-            DestroyImmediate(_cloudMaterial);
-            _cloudMaterial = null;
-
-            DestroyImmediate(_cloudCombinerMaterial);
-            _cloudCombinerMaterial = null;
-
-            DestroyImmediate(_cloudBlenderMaterial);
-            _cloudBlenderMaterial = null;
-
-            DestroyImmediate(_cloudShadowPassMaterial);
-            _cloudShadowPassMaterial = null;
-
-            DestroyImmediate(_perlin3D);
-            _perlin3D = null;
-
-            DestroyImmediate(_detail3D);
-            _detail3D = null;
-
-            Resources.UnloadAsset(_curlTexture);
-            _curlTexture = null;
-        }
-
-        private void CreateRenderTextures()
-        {
-            if (_subFrame == null && _camera != null)
-            {
-                RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
-                _subFrame = new RenderTexture(_cloudsSharedProperties.subFrameWidth,
-                    _cloudsSharedProperties.subFrameHeight, 0, format, RenderTextureReadWrite.Linear);
-                _subFrame.filterMode = FilterMode.Bilinear;
-                _subFrame.hideFlags = HideFlags.HideAndDontSave;
-                _isFirstFrame = true;
-            }
-
-            if (_previousFrame == null && _camera != null)
-            {
-                RenderTextureFormat format = _camera.hdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
-                _previousFrame = new RenderTexture(_cloudsSharedProperties.frameWidth,
-                    _cloudsSharedProperties.frameHeight, 0, format, RenderTextureReadWrite.Linear);
-                _previousFrame.filterMode = FilterMode.Bilinear;
-                _previousFrame.hideFlags = HideFlags.HideAndDontSave;
-                _isFirstFrame = true;
-            }
-        }
-
-        private void DestroyRenderTextures()
-        {
-            DestroyImmediate(_subFrame);
-            _subFrame = null;
-
-            DestroyImmediate(_previousFrame);
-            _previousFrame = null;
-        }
-
-        private Light FindDirectionalLightInScene()
-        {
-            Light[] lights = GameObject.FindObjectsOfType<Light>();
-
-            foreach (Light light in lights)
-            {
-                if (light.type == LightType.Directional) { return light; }
-            }
-
-            return null;
-        }
-
-        private void UpdateMaterialsPublicProperties()
-        {
-            if (_cloudMaterial && _camera)
-            {
-                Vector3 lightDirection = sunLight.transform.forward;
-
-                _cloudMaterial.SetFloat("_CloudBottomFade", cloudBottomFade);
-
-                _cloudMaterial.SetFloat("_MaxIterations", maxIterations);
-                _cloudMaterial.SetFloat("_SampleScalar", sampleScalar);
-                _cloudMaterial.SetFloat("_SampleThreshold", sampleThreshold);
-                _cloudMaterial.SetFloat("_LODDistance", lodDistance);
-                _cloudMaterial.SetFloat("_RayMinimumY", horizonLevel);
-                _cloudMaterial.SetFloat("_DetailScale", detailScale);
-                _cloudMaterial.SetFloat("_ErosionEdgeSize", erosionEdgeSize);
-                _cloudMaterial.SetFloat("_CloudDistortion", cloudDistortion);
-                _cloudMaterial.SetFloat("_CloudDistortionScale", cloudDistortionScale);
-                _cloudMaterial.SetFloat("_HorizonFadeScalar", horizonFade);
-                _cloudMaterial.SetFloat("_HorizonFadeStartAlpha", horizonFadeStartAlpha);
-                _cloudMaterial.SetFloat("_OneMinusHorizonFadeStartAlpha", 1.0f - horizonFadeStartAlpha);
-                _cloudMaterial.SetTexture("_PerlinWorleyNoise", _perlin3D);
-                _cloudMaterial.SetTexture("_WorleyNoise", _detail3D);
-                _cloudMaterial.SetVector("_BaseOffset", _baseOffset);
-                _cloudMaterial.SetVector("_DetailOffset", _detailOffset);
-                _cloudMaterial.SetFloat("_BaseScale", 1.0f / atmosphereEndHeight * baseScale);
-                _cloudMaterial.SetFloat("_LightScalar", sunScalar);
-                _cloudMaterial.SetFloat("_AmbientScalar", ambientScalar);
-                _cloudMaterial.SetVector("_CloudHeightGradient1", _cloudGradientVector1);
-                _cloudMaterial.SetVector("_CloudHeightGradient2", _cloudGradientVector2);
-                _cloudMaterial.SetVector("_CloudHeightGradient3", _cloudGradientVector3);
-                _cloudMaterial.SetTexture("_Coverage", cloudCoverage);
-                _cloudMaterial.SetTexture("_WeatherTexture", cloudCoverage);
-
-                _cloudMaterial.SetVector("_LightDirection", lightDirection);
-
-                _cloudMaterial.SetColor("_LightColor", sunLight.color);
-                _cloudMaterial.SetColor("_CloudBaseColor", cloudBaseColor);
-                _cloudMaterial.SetColor("_CloudTopColor", cloudTopColor);
-
-                _cloudMaterial.SetFloat("_HorizonCoverageStart", horizonCoverageStart);
-                _cloudMaterial.SetFloat("_HorizonCoverageEnd", horizonCoverageEnd);
 
 
-                _cloudMaterial.SetFloat("_Density", density);
-                _cloudMaterial.SetFloat("_ForwardScatteringG", forwardScatteringG);
-                _cloudMaterial.SetFloat("_BackwardScatteringG", backwardScatteringG);
-                _cloudMaterial.SetFloat("_DarkOutlineScalar", darkOutlineScalar);
-
-                float atmosphereThickness = atmosphereEndHeight - atmosphereStartHeight;
-                _cloudMaterial.SetFloat("_SunRayLength", sunRayLength * atmosphereThickness);
-                _cloudMaterial.SetFloat("_ConeRadius", coneRadius * atmosphereThickness);
-                _cloudMaterial.SetFloat("_RayStepLength", atmosphereThickness / Mathf.Floor(maxIterations / 2.0f));
-
-                _cloudMaterial.SetTexture("_Curl2D", _curlTexture);
-                _cloudMaterial.SetFloat("_CoverageScale", 1.0f / _cloudsSharedProperties.maxDistance);
-                _cloudMaterial.SetVector("_CoverageOffset", _coverageOffset);
-                _cloudMaterial.SetFloat("_MaxRayDistance", _cloudsSharedProperties.maxRayDistance);
-
-                _cloudMaterial.SetVector("_Random0", _randomVectors[0]);
-                _cloudMaterial.SetVector("_Random1", _randomVectors[1]);
-                _cloudMaterial.SetVector("_Random2", _randomVectors[2]);
-                _cloudMaterial.SetVector("_Random3", _randomVectors[3]);
-                _cloudMaterial.SetVector("_Random4", _randomVectors[4]);
-                _cloudMaterial.SetVector("_Random5", _randomVectors[5]);
-            }
-        }
-
-        private Vector4 CloudHeightGradient(Gradient gradient)
-        {
-            int l = gradient.colorKeys.Length;
-            float a = l > 0 ? gradient.colorKeys[0].time : 0.0f;
-            float b = l > 1 ? gradient.colorKeys[1].time : a;
-            float c = l > 2 ? gradient.colorKeys[2].time : b;
-            float d = l > 3 ? gradient.colorKeys[3].time : c;
-
-            return new Vector4(a, b, c, d);
-        }
     }
 }
