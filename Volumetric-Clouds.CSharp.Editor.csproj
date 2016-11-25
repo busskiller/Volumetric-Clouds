@@ -115,6 +115,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\GPUGraph\Editor\Applications\ShaderGenerator.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Applications\TerrainGenerator.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Applications\TextureGenerator.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\GUIUtil.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Editor\GraphEditor.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Editor\NodeOptionsGenerator.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Graph.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\GraphEditorUtils.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\GraphParamCollection.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Node.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\NodeInput.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\CustomExprNode.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\NoiseNode.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\ParamNode_Float.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\ParamNode_Texture2D.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\SimpleNode.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\SubGraphNode.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\Nodes\TexCoordNode.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\Graph System\ShaderDefs.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\RunTimeGraphEditor.cs" />
+    <Compile Include="Assets\GPUGraph\Editor\StringUtils.cs" />
     <Compile Include="Assets\kode80\Clouds\Editor\CloudsEditor.cs" />
     <Compile Include="Assets\kode80\Clouds\Editor\CubemapExporter.cs" />
     <Compile Include="Assets\kode80\Clouds\Editor\TimeOfDayEditor.cs" />
@@ -153,6 +174,7 @@
     <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\SemanticVersion.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\GPUGraph\LICENSE.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Catlike Coding Readme.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Example\Noise Example.shader" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Noise Readme.txt" />
@@ -174,6 +196,7 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudShadowPass.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudsCrepuscularRays.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds 1.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
