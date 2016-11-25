@@ -78,6 +78,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\GPUGraph\Runtime\GraphUtils.cs" />
+    <Compile Include="Assets\GPUGraph\Runtime\RuntimeGraph.cs" />
+    <Compile Include="Assets\GPUGraph\Sample\SampleGPUGScript.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\CloudManager.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\GlobalShaderVariables.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\RenderMaterialFullscreen.cs" />
@@ -99,6 +102,7 @@
     <Compile Include="Assets\kode80\UnityTools\EditorTools\Scripts\RecordVideo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\GPUGraph\LICENSE.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Catlike Coding Readme.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Example\Noise Example.shader" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Noise Readme.txt" />
@@ -120,6 +124,7 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudShadowPass.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudsCrepuscularRays.shader" />
+    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds 1.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
