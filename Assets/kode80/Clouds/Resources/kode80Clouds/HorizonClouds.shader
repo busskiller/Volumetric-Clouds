@@ -225,7 +225,14 @@ Shader "Custom/P5/HorizonClouds"
 
 		return lerp( coverage, coverageB, alpha);
 	}
-
+	inline float mix(float4 lowFreqNoise,float4 neglowFreqNoise, float a){
+		float mixValueR = smoothstep(lowFreqNoise.r,neglowFreqNoise.r, a);
+		float mixValueG = smoothstep(lowFreqNoise.g,neglowFreqNoise.g, a);
+		float mixValueB = smoothstep(lowFreqNoise.b,neglowFreqNoise.b, a);
+		float mixValueA = smoothstep(lowFreqNoise.a,neglowFreqNoise.a, a);
+		float sum = mixValueR +mixValueG+mixValueB+mixValueA;
+		return sum;
+	}
 	//P is either our current ray position or current camera position! 
 	float SampleCloudDensity(float3 ray, float4 weather_data, float csRayHeight) 
 	{
@@ -238,10 +245,8 @@ Shader "Custom/P5/HorizonClouds"
 		//_Base scale will increase the size of the clouds _BaseScale+_BaseOffset
 		//We have to mulyiply by base scale as the texture we are looking into is huge simply using the ray coordinates as a lookup
 		//will result in sampling the same area of a for all pixels, ergo we end up with one giant cloud in the sky
-		float4 test = float4(ray * _BaseScale, 0);
+		float4 test = float4(ray * _BaseScale + _BaseOffset, 0);
 		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test).rgba;
-
-
 
 		low_frequency_noises *= GetDensityHeightGradientScalar(csRayHeight);
 
@@ -265,7 +270,7 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient =  GetDensityHeightGradientForPoint(ray,weather_data);  //GradientStep(csRayHeight,gradient);
+		float4 density_height_gradient =  GetDensityHeightGradientForPoint(test,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -301,10 +306,13 @@ Shader "Custom/P5/HorizonClouds"
 		//We get the height fraction (the position of the current sample) to use it when blending the different noises over height
 		//We use this together with the FBM we'll make in a momement to transition between cloud shapes
 		float inCloudMinMax = 1;
-		float height_fraction = GetHeightFractionForPoint(ray, inCloudMinMax);
+		float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
 		
 		//Then we sample the curl noise...:
 		float2 curl_noise = tex2Dlod(_CurlNoise, test);
+
+		//coord = float4(ray * _BaseScale * _DetailScale, 0.0);
+		//coord.xyz += _DetailOffset;
 		//and...  apply it to the current position
 		float2 currentPosition;
 		currentPosition.xy = ray.xy;
@@ -312,14 +320,15 @@ Shader "Custom/P5/HorizonClouds"
 
 		//We  build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
 		//First we need to sample the noise before using it to make FBM
-		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, test);
+		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, test*0.5).rgb;
+		
 		//Then we make the FBM
-		float high_freq_FBM = (high_frequency_noises.r * 0.625) + (high_frequency_noises.r * 0.25) + (high_frequency_noises.r * 0.125);
+		float high_freq_FBM = (high_frequency_noises.r * 0.625) + (high_frequency_noises.g * 0.25) + (high_frequency_noises.b * 0.125);
 
 		//The transition magic over height happens here:
-		float hight_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 90.0));
+		float high_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 10));
 
-		float final_cloud = Remap(base_cloud_with_coverage,high_freq_noise_modifier ∗ 0 .2 , 1 .0 , 0 .0 , 1 . 0);
+		float final_cloud = Remap(base_cloud_with_coverage,high_freq_noise_modifier * 0.2, 1.0 , 0.0 , 1.0) ;
 		
 		return final_cloud;
 
@@ -395,7 +404,7 @@ Shader "Custom/P5/HorizonClouds"
 					particle.a = 1.0- T;
 					float bottomShade = particle.y ;
 					float topShade = atmosphereY;//saturate(particle.y) ;
-					particle.rgb *= _LightColor0  *topShade +bottomShade;
+					//particle.rgb *= _LightColor0 +topShade;// +bottomShade;
 					particle.rgb*= particle.a;
 
 					//We multiply the negative alpha with the particle for god knows why
