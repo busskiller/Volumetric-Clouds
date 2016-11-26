@@ -177,14 +177,30 @@ Shader "Custom/P5/HorizonClouds"
 		float gradient2 = DensityHeightFunction(p.y, _Gradient2);
 		float gradient3 = DensityHeightFunction(p.y, _Gradient3);
 
+<<<<<<< HEAD
 		//float weightedSum  = Lerp3(gradient1,gradient2,gradient3,FLOAT4_TYPE(weather_data));
 		float weightedSum = length(float4(FLOAT4_TYPE(weather_data),gradient1,gradient2,gradient3));
+=======
+		//float density1 = p.y
+		//float weightedSum  = FLOAT4_TYPE(weather_data) * FLOAT4_TYPE(weather_data);
+		float weightedSum = length(float4(FLOAT4_TYPE(weather_data), gradient3, gradient2, gradient1));// *1 - height;
+>>>>>>> origin/master
 		//float weightedSum = (gradient1 + gradient2 + gradient3) * FLOAT4_TYPE(weather_data);
 		//float weightedSum = FLOAT4_TYPE(weather_data) < 0.5 ? lerp( v0, v1, FLOAT4_TYPE(weather_data) * 2.0) : lerp( v1, v2, (FLOAT4_TYPE(weather_data)-0.5) * 2.0);
 		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
-		//float weightedSum = 1;
+		//float weightedSum = weightedSum;
 
+<<<<<<< HEAD
 		return weightedSum;
+=======
+		float a = gradient1 + 1.0f - saturate(FLOAT4_TYPE(weather_data) / 0.5f);
+		float b = gradient2 + 1.0f - abs(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
+		float c = gradient3 + saturate(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
+		
+		//return Lerp3(a,b,c ,FLOAT4_TYPE(weather_data));
+		return saturate(weightedSum);
+
+>>>>>>> origin/master
 	}
 				
 	inline float4 SampleWeatherTexture( float3 ray)
@@ -243,6 +259,7 @@ Shader "Custom/P5/HorizonClouds"
 		float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
 
 
+<<<<<<< HEAD
 		float3 wind_direction = float3 (1.0, 0.0, 0.0);
 		float cloud_speed = 10.0;
 
@@ -251,8 +268,14 @@ Shader "Custom/P5/HorizonClouds"
 		ray += height_fraction * wind_direction * cloud_top_offset;
 		ray += (wind_direction + float3(0.0, 0.1, 0.0)) * _Time * cloud_speed;
 
+=======
+			float cloud_top_offset = 500.0+ 500 * csRayHeight;
 
-		test = float4(ray  * _BaseScale + _BaseOffset, 0);
+			ray += csRayHeight * wind_direction * cloud_top_offset;
+			ray += (wind_direction + float3(0.1, 0.0, 0.0)) * cloud_speed;
+		//}
+>>>>>>> origin/master
+
 		//WIND DIRECTION STOP
 
 
@@ -267,7 +290,7 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient = GetDensityHeightGradientForPoint(test,weather_data);  //GradientStep(csRayHeight,gradient);
+		float4 density_height_gradient = GetDensityHeightGradientForPoint(ray,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -280,7 +303,12 @@ Shader "Custom/P5/HorizonClouds"
 		float cloud_coverage = weather_data.r;
 
 		//Funny enough, we use the remap function to combine the cloud coverage with our base_cloud
+<<<<<<< HEAD
 		float base_cloud_with_coverage = Remap(base_cloud, cloud_coverage, 1.0, 0.0, 1.0);
+=======
+		float coverageModifier = cloud_coverage;// -smoothstep(0, 1, csRayHeight);//*smoothstep(-density_height_gradient, density_height_gradient, csRayHeight);
+		float base_cloud_with_coverage = Remap(base_cloud, coverageModifier, 1.0, 0.0, 1.0);
+>>>>>>> origin/master
 
 		//We then multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
 		//An example of this, is that smaller clouds should look lighter now. Stuff like that.
@@ -483,9 +511,14 @@ Shader "Custom/P5/HorizonClouds"
 						ray -= rayStep * rayStepScalar;
 						i -= rayStepScalar;
 
+<<<<<<< HEAD
 						atmosphereY = NormalizedAtmosphereY( ray);
 						
 						coverage = SampleWeatherTexture( ray);
+=======
+						float atmosphereY = NormalizedAtmosphereY( ray);
+						coverage = SampleWeatherTexture(ray);
+>>>>>>> origin/master
 						density = SampleCloudDensity( ray, coverage, atmosphereY);
 						particle = float4( density, density, density, density);
 					}
@@ -501,6 +534,7 @@ Shader "Custom/P5/HorizonClouds"
 					sunLight *= _LightScalar;
 					ambientLight *= _AmbientScalar;
 					
+<<<<<<< HEAD
 					particle.a = 1.0 - T;
 					particle.rgb = sunLight + ambientLight;
 					particle.rgb *= particle.a;
@@ -511,6 +545,15 @@ Shader "Custom/P5/HorizonClouds"
 					float topShade = particle.y;//saturate(particle.y) ;
 					particle.rgb *= _LightColor0 - bottomShade;// +bottomShade;
 
+=======
+					float T = 1.0 -particle.a;
+					//particle.a = 1.0 - T;
+					float bottomShade =  atmosphereY;
+					float ambientLight =  lerp(_CloudBaseColor, _CloudTopColor, atmosphereY);
+					float topShade = saturate(particle.y) ;
+					particle.rgb = ambientLight;// *_LightColor * _CloudTopColor * _CloudBaseColor *atmosphereY;// +bottomShade;
+					particle.rgb*= particle.a;
+>>>>>>> origin/master
 					
 
 					//We multiply the negative alpha with the particle for god knows why
