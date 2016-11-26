@@ -177,21 +177,19 @@ Shader "Custom/P5/HorizonClouds"
 		float gradient3 = DensityHeightFunction(p.y, _Gradient3);
 
 		//float density1 = p.y
-		//float weightedSum  = Lerp3(gradient1,gradient2,gradient3,FLOAT4_TYPE(weather_data));
-		float weightedSum = length(float4(FLOAT4_TYPE(weather_data), gradient3,gradient2,gradient1)) * saturate(p.y);
+		//float weightedSum  = FLOAT4_TYPE(weather_data) * FLOAT4_TYPE(weather_data);
+		float weightedSum = length(float4(FLOAT4_TYPE(weather_data), gradient3, gradient2, gradient1));// *1 - height;
 		//float weightedSum = (gradient1 + gradient2 + gradient3) * FLOAT4_TYPE(weather_data);
 		//float weightedSum = FLOAT4_TYPE(weather_data) < 0.5 ? lerp( v0, v1, FLOAT4_TYPE(weather_data) * 2.0) : lerp( v1, v2, (FLOAT4_TYPE(weather_data)-0.5) * 2.0);
 		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
-		//float weightedSum = 1;
+		//float weightedSum = weightedSum;
 
-
-
-		float a = 1.0f - saturate(FLOAT4_TYPE(weather_data) / 0.5f);
-		float b = 1.0f - abs(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
-		float c = saturate(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
-
-		//return DensityHeightFunction(p.y, _Gradient1)* saturate(p.y);
-		return weightedSum;
+		float a = gradient1 + 1.0f - saturate(FLOAT4_TYPE(weather_data) / 0.5f);
+		float b = gradient2 + 1.0f - abs(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
+		float c = gradient3 + saturate(FLOAT4_TYPE(weather_data) - 0.5f) * 2.0f;
+		
+		//return Lerp3(a,b,c ,FLOAT4_TYPE(weather_data));
+		return saturate(weightedSum);
 
 	}
 
@@ -247,13 +245,12 @@ Shader "Custom/P5/HorizonClouds"
 			float3 wind_direction = float3 (1.0, 0.0, 0.0);
 			float cloud_speed = 10.0;
 
-			float cloud_top_offset = 500.0;
+			float cloud_top_offset = 500.0+ 500 * csRayHeight;
 
-			ray += smoothstep(0, 1, csRayHeight) * wind_direction * cloud_top_offset;
+			ray += csRayHeight * wind_direction * cloud_top_offset;
 			ray += (wind_direction + float3(0.1, 0.0, 0.0)) * cloud_speed;
 		//}
 
-		test = float4(ray  * _BaseScale + _BaseOffset, 0);
 		//WIND DIRECTION STOP
 
 
@@ -268,7 +265,7 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -low_freq_FBM*_BaseFBMScale, 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient = GetDensityHeightGradientForPoint(test,weather_data);  //GradientStep(csRayHeight,gradient);
+		float4 density_height_gradient = GetDensityHeightGradientForPoint(ray,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -281,7 +278,7 @@ Shader "Custom/P5/HorizonClouds"
 		float cloud_coverage = weather_data.r;
 
 		//Funny enough, we use the remap function to combine the cloud coverage with our base_cloud
-		float coverageModifier = cloud_coverage;//*smoothstep(-density_height_gradient, density_height_gradient, csRayHeight);
+		float coverageModifier = cloud_coverage;// -smoothstep(0, 1, csRayHeight);//*smoothstep(-density_height_gradient, density_height_gradient, csRayHeight);
 		float base_cloud_with_coverage = Remap(base_cloud, coverageModifier, 1.0, 0.0, 1.0);
 
 		//We then multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
@@ -384,17 +381,18 @@ Shader "Custom/P5/HorizonClouds"
 						i -= rayStepScalar;
 
 						float atmosphereY = NormalizedAtmosphereY( ray);
-						coverage = SampleWeatherTexture( ray);
+						coverage = SampleWeatherTexture(ray);
 						density = SampleCloudDensity( ray, coverage, atmosphereY);
 						particle = float4( density, density, density, density);
 					}
 
 					
 					float T = 1.0 -particle.a;
-					particle.a = 1.0 - T;
+					//particle.a = 1.0 - T;
 					float bottomShade =  atmosphereY;
+					float ambientLight =  lerp(_CloudBaseColor, _CloudTopColor, atmosphereY);
 					float topShade = saturate(particle.y) ;
-					//particle.rgb += _LightColor * _CloudTopColor * _CloudBaseColor *atmosphereY;// +bottomShade;
+					particle.rgb = ambientLight;// *_LightColor * _CloudTopColor * _CloudBaseColor *atmosphereY;// +bottomShade;
 					particle.rgb*= particle.a;
 					
 
