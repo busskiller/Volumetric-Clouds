@@ -199,9 +199,22 @@ Shader "Custom/P5/HorizonClouds"
 	}
 	
 	inline float mix(float4 lowFreqNoise,float4 neglowFreqNoise, float a){
+		float mixValueR =  lerp(lowFreqNoise.r,neglowFreqNoise.r, smoothstep(0,1,a));
+		float mixValueG =  lerp(lowFreqNoise.g,neglowFreqNoise.g, smoothstep(0,1,a));
+		float mixValueB =  lerp(lowFreqNoise.b,neglowFreqNoise.b, smoothstep(0,1,a));
+		float mixValueA =  lerp(lowFreqNoise.a,neglowFreqNoise.a, smoothstep(0,1,a));
+		float sum = mixValueR +mixValueG+mixValueB+mixValueA/4	;
 		return sum;
 	}
 
+	inline float MixNoise(float value, float noise, float a, float b, float height)
+	{
+		float s = smoothstep(a, b, height);
+		value += noise * s;
+		//value *= lerp( 1.0, 0.5, s);
+
+		return value;
+	}
 
 	//P is either our current ray position or current camera position! 
 	float SampleCloudDensity(float3 ray, float4 weather_data, float csRayHeight) 
@@ -214,11 +227,9 @@ Shader "Custom/P5/HorizonClouds"
 		
 
 		//WIND DIRECTION START
-		ray = ray * _BaseScale + _BaseOffset;
 		
-		float4 test = float4(ray, 0);
-		float2 inCloudMinMax = float2 (10, 4);
-		//float2 inCloudMinMax = ray.xy;
+		float4 test = float4(ray  * _BaseScale + _BaseOffset, 0);
+		float2 inCloudMinMax = float2(1500,4000);
 		float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
 
 
@@ -228,10 +239,10 @@ Shader "Custom/P5/HorizonClouds"
 		float cloud_top_offset = 500.0;
 		
 		ray += height_fraction * wind_direction * cloud_top_offset;
-		ray += (wind_direction + float3(0.0, 0.1, 0.0)) * 30 * cloud_speed;
+		ray += (wind_direction + float3(0.0, 0.1, 0.0)) * _Time * cloud_speed;
 
 
-		test = float4(ray, 0);
+		test = float4(ray  * _BaseScale + _BaseOffset, 0);
 		//WIND DIRECTION STOP
 
 
@@ -246,7 +257,7 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient =  GetDensityHeightGradientForPoint(test,weather_data);  //GradientStep(csRayHeight,gradient);
+		float4 density_height_gradient = GetDensityHeightGradientForPoint(test,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
@@ -264,11 +275,8 @@ Shader "Custom/P5/HorizonClouds"
 		//We then multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
 		//An example of this, is that smaller clouds should look lighter now. Stuff like that.
 		//base_cloud_with_coverage *= cloud_coverage;
-
 		//return base_cloud_with_coverage;
 
-
-		
 		//Final steps, namely Part 3 (There is also a super short part 4 afterwards, no biggie.) 		
 
 		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
@@ -281,24 +289,25 @@ Shader "Custom/P5/HorizonClouds"
 		//float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
 		
 		//Then we sample the curl noise...:
-		float2 curl_noise = tex2Dlod(_CurlNoise, test);
+		float2 curl_noise = tex2Dlod(_CurlNoise,test);
 
-		//coord = float4(ray * _BaseScale * _DetailScale, 0.0);
 		//coord.xyz += _DetailOffset;
 		//and...  apply it to the current position
-		float2 currentPosition;
-		currentPosition.xy = ray.xy;
-		currentPosition.xy += curl_noise.xy * (1.0 - height_fraction);
+		ray.xy *= curl_noise.xy * (1.0 - height_fraction);
+
+		//float4 coord = float4(ray*0.1 + _DetailOffset, 0.0);
 
 		//We  build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
 		//First we need to sample the noise before using it to make FBM
-		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, test*0.5).rgb;
-		
+		//float3 high_frequency_noises = tex3Dlod(_WorleyNoise, float4(ray*0.1,0)).rgb;
+		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, float4(ray*0.0001 *_DetailScale + _DetailOffset, 0)).rgb;
+
 		//Then we make the FBM
 		float high_freq_FBM = (high_frequency_noises.r * 0.625) + (high_frequency_noises.g * 0.25) + (high_frequency_noises.b * 0.125);
 
+		height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
 		//The transition magic over height happens here:
-		float high_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 10));
+		float high_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM,saturate(height_fraction * 10));
 
 		//float final_cloud = base_cloud_with_coverage + high_freq_FBM* high_freq_noise_modifier* 0.2;
 		float final_cloud = Remap(base_cloud_with_coverage, high_freq_noise_modifier*0.2 , 1.0 , 0.0 , 1.0) ;
@@ -377,11 +386,12 @@ Shader "Custom/P5/HorizonClouds"
 
 					
 					float T = 1.0 -particle.a;
-					//p = pos + ray * f * _ViewDistance;
 					particle.a = 1.0- T;
 					float bottomShade =  atmosphereY;
 					float topShade = particle.y;//saturate(particle.y) ;
+					particle.rgb *= _LightColor0 - bottomShade;// +bottomShade;
 					particle.rgb*= particle.a;
+					
 
 					//We multiply the negative alpha with the particle for god knows why
 					//color.rgb
