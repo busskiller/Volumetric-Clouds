@@ -4,7 +4,6 @@ using CatlikeCoding.Noise;
 using CatlikeCoding.NumberFlow;
 using CatlikeCoding.NumberFlow.Functions.Colors;
 using CatlikeCoding.NumberFlow.Functions.Floats;
-using Gradient = CatlikeCoding.NumberFlow.Functions.Colors.Gradient;
 using PerlinNoise = CatlikeCoding.Noise.PerlinNoise;
 
 public static class Texture3dConverter
@@ -15,6 +14,7 @@ public static class Texture3dConverter
 
     public static Texture3D GenerateNoiseTexture3D(int size, TextureFormat format)
     {
+
         Texture3D tex3D = new Texture3D(size, size, size, format,false);
         int dim = size;
         Color[] newC = new Color[dim * dim * dim];
@@ -22,11 +22,15 @@ public static class Texture3dConverter
             for (int i = 0; i < dim; i++) {
                 for (int j = 0; j < dim; j++) {
                     for (int k = 0; k < dim; k++) {
+                        float z = PerlinNoise.Sample2D(new Vector3(i, j, 0), 0, 8, 2, 0.5f);
+                        float x = PerlinNoise.Sample2D(new Vector3(0, j, k), 8, 8, 2, 0.5f);
+                        float y = PerlinNoise.Sample2D(new Vector3(i, 0, k), 8, 8, 2, 0.5f);
                         //newC[i + (j * dim) + (k * dim * dim)] = new Color((i * 1.0f) * oneOverDim, (j * 1.0f) * oneOverDim, (k * 1.0f) * oneOverDim, 1.0f);
-                        newC[i + (j * dim) + (k * dim * dim)] = new Color(PerlinNoise.Sample3D(new Vector3(0,j,k),10) *oneOverDim, PerlinNoise.Sample3D(new Vector3(i, 0, k), 10) * oneOverDim, PerlinNoise.Sample3D(new Vector3(i, j, 0), 10) * oneOverDim);
+                        newC[i + (j * dim) + (k * dim * dim)] = new Color(x,y,z);
                     }
                 }
             }
+        Debug.Log(newC[1]);
         tex3D.SetPixels(newC);
         tex3D.Apply();
         return tex3D;
@@ -51,6 +55,7 @@ public static class Texture3dConverter
                 }
             }
         }
+        Debug.Log(newC[10]);
         tex3D.SetPixels(newC);
         tex3D.Apply();
         return tex3D;

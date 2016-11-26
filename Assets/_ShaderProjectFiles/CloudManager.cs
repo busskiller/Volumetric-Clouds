@@ -410,7 +410,7 @@ namespace kode80.Clouds
             //Perlin noise 3D texture - but we need a perlin-worly noise combined with three worley noises
             if (_perlin3D == null)
             {
-                //_perlin3D = Texture3dConverter.GeneratePerlinWorleyTexture3D(128, TextureFormat.RGBA32);
+                //_perlin3D = Texture3dConverter.GenerateNoiseTexture3D(128, TextureFormat.RGBA32);
                 _perlin3D = Load3DTexture("kode80Clouds/noise", 128, TextureFormat.RGBA32);
             }
 
