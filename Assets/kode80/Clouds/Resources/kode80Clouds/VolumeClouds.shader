@@ -248,8 +248,6 @@ Shader "Hidden/kode80/VolumeClouds"
 				return noise * _SampleScalar * smoothstep(0.0, _CloudBottomFade * 1.0, csRayHeight);
 			}
 
-
-
 			float HenyeyGreensteinPhase( float cosAngle, float g)
 			{
 				float g2 = g * g;
@@ -267,7 +265,6 @@ Shader "Hidden/kode80/VolumeClouds"
 				powder = saturate( powder * _DarkOutlineScalar * 2.0);
 				return lerp( 1.0, powder, smoothstep( 0.5, -0.5, cosTheta));
 			}
-
 
 			inline float3 SampleLight( float3 origin, float originDensity, float pixelAlpha, float3 cosAngle, float2 debugUV, float rayDistance, float3 RandomUnitSphere[6])
 			{
@@ -323,13 +320,11 @@ Shader "Hidden/kode80/VolumeClouds"
 				return _LightColor * BeerTerm( thickness) * PowderTerm( originDensity, cosAngle) * P;
 			}
 
-
 			inline float3 SampleAmbientLight( float atmosphereY, float depth)
 			{
 				return lerp(_CloudBaseColor, _CloudTopColor, atmosphereY);
 			}
 			
-
 			half4 frag( clouds_v2f i) : COLOR
 			{
 				half4 color = half4( 0.0, 0.0, 0.0, 0.0);
@@ -340,20 +335,19 @@ Shader "Hidden/kode80/VolumeClouds"
 					float2 uv = i.uv;
 					float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CameraPosition, rayDirection);
 					float3 rayStep = rayDirection * _RayStepLength;
-					float i=0; ///
+					float i=0;
 					
 					float atmosphereY = 0.0;
-					float transmittance = 1.0; ///
+					float transmittance = 1.0;
 					float rayStepScalar = 1.0;
 
 					float cosAngle = dot( rayDirection, -_LightDirection);
 
-					float normalizedDepth = 0.0; ///
+					float normalizedDepth = 0.0;
 					float zeroThreshold = 4.0;
 					float zeroAccumulator = 0.0;
-					const float3 RandomUnitSphere[6] = { _Random0, _Random1, _Random2, _Random3, _Random4, _Random5 }; ///
+					const float3 RandomUnitSphere[6] = { _Random0, _Random1, _Random2, _Random3, _Random4, _Random5 };
 					float value = 1.0;
-
 					while( true)
 					{
 						if( i >= _MaxIterations || color.a >= 1.0 || atmosphereY >= 1.0)
@@ -361,9 +355,8 @@ Shader "Hidden/kode80/VolumeClouds"
 							break;
 						}
 						
-						normalizedDepth = distance( _CameraPosition, ray) / _MaxDistance; ///
-						float lod = step( _LODDistance, normalizedDepth); ///
-
+						normalizedDepth = distance( _CameraPosition, ray) / _MaxDistance;
+						float lod = step( _LODDistance, normalizedDepth);
 						float4 coverage = SampleCoverage( ray, atmosphereY, lod);
 						value = SampleCloud( ray, color.a, coverage, atmosphereY, lod);
 						float4 particle = float4( value, value, value, value);
@@ -378,15 +371,15 @@ Shader "Hidden/kode80/VolumeClouds"
 								i -= rayStepScalar;
 
 								atmosphereY = NormalizedAtmosphereY( ray);
-								normalizedDepth = distance( _CameraPosition, ray) / _MaxDistance; //
-								lod = step( _LODDistance, normalizedDepth); //
+								normalizedDepth = distance( _CameraPosition, ray) / _MaxDistance;
+								lod = step( _LODDistance, normalizedDepth);
 								coverage = SampleCoverage( ray, atmosphereY, lod);
 								value = SampleCloud( ray, color.a, coverage, atmosphereY, lod);
 								particle = float4( value, value, value, value);
 							}
 
 							float T = 1.0 - particle.a;
-							transmittance *= T; //
+							transmittance *= T;
 
 							float3 ambientLight = SampleAmbientLight( atmosphereY, normalizedDepth);
 							float3 sunLight = SampleLight( ray, particle.a, color.a, cosAngle, uv, normalizedDepth, RandomUnitSphere);
