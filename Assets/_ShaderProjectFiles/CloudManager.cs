@@ -92,8 +92,6 @@ namespace kode80.Clouds
 
         [HeaderAttribute("Modeling (Base)")]
         public float baseScale = 1.0f;
-        [Range(0,10)]
-        public float baseFbmScale = 1.0f;
         public Gradient cloudGradient1;
         public Gradient cloudGradient2;
         public Gradient cloudGradient3;
@@ -108,8 +106,6 @@ namespace kode80.Clouds
 
         [HeaderAttribute("Modeling (Detail)")]
         public float detailScale = 8.0f;
-        [Range(0, 1)]
-        public float detailFbmScale = 1.0f;
         [Space(10)]
         [RangeAttribute(0.0f, 1.0f)]
         public float erosionEdgeSize = 0.5f;
@@ -514,8 +510,7 @@ namespace kode80.Clouds
 
                 _cloudMaterial.SetFloat("_HorizonCoverageStart", horizonCoverageStart);
                 _cloudMaterial.SetFloat("_HorizonCoverageEnd", horizonCoverageEnd);
-                _cloudMaterial.SetFloat("_BaseFBMScale", baseFbmScale);
-                _cloudMaterial.SetFloat("_DetailFBMScale", detailFbmScale);
+
 
                 _cloudMaterial.SetFloat("_Density", density);
                 _cloudMaterial.SetFloat("_ForwardScatteringG", forwardScatteringG);
