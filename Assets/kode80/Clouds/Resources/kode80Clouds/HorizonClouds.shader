@@ -100,6 +100,15 @@ Shader "Custom/P5/HorizonClouds"
 	float _HorizonCoverageStart;
 	float _HorizonCoverageEnd;
 
+
+	float3 _Random0;
+	float3 _Random1;
+	float3 _Random2;
+	float3 _Random3;
+	float3 _Random4;
+	float3 _Random5;
+
+
 	#define FLOAT4_TYPE( f)		f.b
 	#define FLOAT4_COVERAGE( f)	f.r
 	#define FLOAT4_RAIN( f)		f.g
@@ -150,10 +159,12 @@ Shader "Custom/P5/HorizonClouds"
 	{
 		return lerp(gradient.x, gradient.y, smoothstep(0, 1, a)) - lerp(gradient.z, gradient.w, smoothstep(0, 1, a));
 	}
+
 	inline float Lerp3(float v0, float v1, float v2, float a)
 	{
 		return a < 0.5 ? lerp(v0, v1, a * 2.0) : lerp(v1, v2, (a - 0.5) * 2.0);
 	}
+
 	//This function is used to figure out which clouds should be drawn and so forth
 	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
 	//This function samples the B channel (Cloud type) using the ray position. 
@@ -175,8 +186,7 @@ Shader "Custom/P5/HorizonClouds"
 
 		return weightedSum;
 	}
-
-					
+				
 	inline float4 SampleWeatherTexture( float3 ray)
 	{
 		float2 unit = ray.xz * _CoverageScale;
@@ -277,7 +287,6 @@ Shader "Custom/P5/HorizonClouds"
 		//base_cloud_with_coverage *= cloud_coverage;
 		//return base_cloud_with_coverage;
 
-		//Final steps, namely Part 3 (There is also a super short part 4 afterwards, no biggie.) 		
 
 		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
 		//We use the curl noise to distort the sample coordinate at the bottom of the clouds
@@ -318,13 +327,100 @@ Shader "Custom/P5/HorizonClouds"
 
 	}
 
-
 	inline float NormalizedAtmosphereY( float3 ray)
 		{
 			float y = length( ray) - _EarthRadius - _StartHeight;
 			return y / _AtmosphereThickness;
 		}
 			
+
+	//Ligthing magic - courtesy of our lord and saviour, K80
+
+	//Beer’s law models the attenuation of light as it passes through a material. In our case, the clouds.
+	inline float BeerTerm(float densityAtSample)
+	{
+		return exp(-_Density * densityAtSample);
+	}
+
+	//Used to increase probability of light scattering forward, to create the silver lining seen in clouds
+	float HenyeyGreensteinPhase(float cosAngle, float g)
+	{
+		float g2 = g * g;
+		return (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * cosAngle, 1.5);
+	}
+
+	//In-Scattering Probability Function (Powdered Sugar Effect)
+	inline float PowderTerm(float densityAtSample, float cosTheta)
+	{
+		float powder = 1.0 - exp(-_Density * densityAtSample * 2.0);
+		powder = saturate(powder * _DarkOutlineScalar * 2.0);
+		return lerp(1.0, powder, smoothstep(0.5, -0.5, cosTheta));
+	}
+
+	//Were all the magic happens. This is ommited from the book. Genious. Again, K80 to the rescue
+	inline float3 SampleLight(float3 origin, float originDensity, float pixelAlpha, float3 cosAngle, float2 debugUV, float rayDistance, float3 RandomUnitSphere[6])
+	{
+		const float iterations = 5.0;
+
+		float3 rayStep = -_LightDirection * (_SunRayLength / iterations);
+		float3 ray = origin + rayStep;
+
+		float atmosphereY = 0.0;
+
+		float lod = step(0.3, originDensity) * 3.0;
+		lod = 0.0;
+
+		float value = 0.0;
+
+		float4 coverage;
+
+		float3 randomOffset = float3(0.0, 0.0, 0.0);
+		float coneRadius = 0.0;
+		const float coneStep = _ConeRadius / iterations;
+		float energy = 0.0;
+
+		float thickness = 0.0;
+
+		for (float i = 0.0; i<iterations; i++)
+		{
+			randomOffset = RandomUnitSphere[i] * coneRadius;
+			ray += rayStep;
+			atmosphereY = NormalizedAtmosphereY(ray);
+
+			coverage = SampleWeatherTexture(ray + randomOffset);
+			value = SampleCloudDensity(ray + randomOffset, coverage, atmosphereY);
+			value *= float(atmosphereY <= 1.0);
+
+			thickness += value;
+
+			coneRadius += coneStep;
+		}
+
+		float far = 8.0;
+		ray += rayStep * far;
+		atmosphereY = NormalizedAtmosphereY(ray);
+		coverage = SampleWeatherTexture(ray);
+		value = SampleCloudDensity(ray, coverage, atmosphereY);
+		value *= float(atmosphereY <= 1.0);
+		thickness += value;
+
+
+		float forwardP = HenyeyGreensteinPhase(cosAngle, _ForwardScatteringG);
+		float backwardsP = HenyeyGreensteinPhase(cosAngle, _BackwardScatteringG);
+		float P = (forwardP + backwardsP) / 2.0;
+
+		return _LightColor * BeerTerm(thickness) * PowderTerm(originDensity, cosAngle) * P;
+	}
+
+
+
+	inline float3 SampleAmbientLight(float atmosphereY, float depth)
+	{
+		return lerp(_CloudBaseColor, _CloudTopColor, atmosphereY);
+	}
+
+
+
 	//Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
@@ -341,21 +437,29 @@ Shader "Custom/P5/HorizonClouds"
 			// We will not be ray-marching twoards any distance field at this point in time.
 			// pos is our original position, and p is our current position which we are going to be using later on.
 			// For each iteration, we read from our SampleCloudDensity function the density of our current position, and add it to this density variable.
-			float cosAngle = dot( rayDirection, -_LightDirection);
-			float density = 1;
-			float3 rayStep = rayDirection * _RayStepLength;
+			
 			float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CameraPosition, rayDirection);
-			//float4 particle = float4(density,density,density,density);
+			float3 rayStep = rayDirection * _RayStepLength;
+			
 			float atmosphereY = 0.0;
 			float rayStepScalar = 1.0;
+			
+			float cosAngle = dot( rayDirection, -_LightDirection);
+			
 			float zeroThreshold = 4.0;
 			float zeroAccumulator = 0.0;
+
+			const float3 RandomUnitSphere[6] = { _Random0, _Random1, _Random2, _Random3, _Random4, _Random5 }; ///
+
+			float density = 1;
+
 			for (float i = 0; i < _MaxIterations; i++)
 			{
-				//float2 uv = i.uv;
-				if(color.a >= 1){
-				break;
+				if (color.a >= 1)
+				{
+					break;
 				}
+
 				// f gives a number between 0 and 1.
 				// We use that to fade our clouds in and out depending on how far and close from our camera we are.
 				float f = i / _Iterations;
@@ -372,25 +476,41 @@ Shader "Custom/P5/HorizonClouds"
 				if(density >0.0 )
 				{
 					zeroAccumulator = 0;
+
 					//Optimization code we can look at that later
 					if( rayStepScalar > 1.0)
 					{
 						ray -= rayStep * rayStepScalar;
 						i -= rayStepScalar;
 
-						float atmosphereY = NormalizedAtmosphereY( ray);
+						atmosphereY = NormalizedAtmosphereY( ray);
+						
 						coverage = SampleWeatherTexture( ray);
 						density = SampleCloudDensity( ray, coverage, atmosphereY);
 						particle = float4( density, density, density, density);
 					}
 
+					float T = 1.0 - particle.a;
+					//particle.a = 1.0- T; //?
+
+
+					float dummy = 0;
+					float3 ambientLight = SampleAmbientLight(atmosphereY, dummy);
+					float3 sunLight = SampleLight(ray, particle.a, color.a, cosAngle, uv, dummy, RandomUnitSphere);
+
+					sunLight *= _LightScalar;
+					ambientLight *= _AmbientScalar;
 					
-					float T = 1.0 -particle.a;
-					particle.a = 1.0- T;
+					particle.a = 1.0 - T;
+					particle.rgb = sunLight + ambientLight;
+					particle.rgb *= particle.a;
+					//particle.rgb = _CloudBaseColor + _LightColor;
+
+
 					float bottomShade =  atmosphereY;
 					float topShade = particle.y;//saturate(particle.y) ;
 					particle.rgb *= _LightColor0 - bottomShade;// +bottomShade;
-					particle.rgb*= particle.a;
+
 					
 
 					//We multiply the negative alpha with the particle for god knows why
@@ -404,6 +524,7 @@ Shader "Custom/P5/HorizonClouds"
 				i += rayStepScalar;
 				ray += rayStep* rayStepScalar;
 				atmosphereY = NormalizedAtmosphereY( ray);
+
 				// And here i just melted all our variables together with random numbers until I had something that looked good.
 				// You can try playing around with them too.
 				//float lightColor = saturate(dot(_WorldSpaceLightPos0, p));
