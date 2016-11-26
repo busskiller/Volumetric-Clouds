@@ -124,7 +124,6 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudShadowPass.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudsCrepuscularRays.shader" />
-    <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds 1.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\HorizonClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />

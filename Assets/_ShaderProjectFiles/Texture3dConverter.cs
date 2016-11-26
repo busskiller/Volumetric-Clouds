@@ -23,7 +23,7 @@ public static class Texture3dConverter
                 for (int j = 0; j < dim; j++) {
                     for (int k = 0; k < dim; k++) {
                         //newC[i + (j * dim) + (k * dim * dim)] = new Color((i * 1.0f) * oneOverDim, (j * 1.0f) * oneOverDim, (k * 1.0f) * oneOverDim, 1.0f);
-                        newC[i + (j * dim) + (k * dim * dim)] = new Color(PerlinNoise.Sample3D(new Vector3(0,j,k), 10) *oneOverDim, PerlinNoise.Sample3D(new Vector3(i, 0, k), 10) * oneOverDim, PerlinNoise.Sample3D(new Vector3(i, j, 0), 10) * oneOverDim);
+                        newC[i + (j * dim) + (k * dim * dim)] = new Color(PerlinNoise.Sample3D(new Vector3(0,j,k),10) *oneOverDim, PerlinNoise.Sample3D(new Vector3(i, 0, k), 10) * oneOverDim, PerlinNoise.Sample3D(new Vector3(i, j, 0), 10) * oneOverDim);
                     }
                 }
             }

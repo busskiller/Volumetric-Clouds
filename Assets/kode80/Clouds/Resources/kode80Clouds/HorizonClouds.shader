@@ -130,9 +130,6 @@ Shader "Custom/P5/HorizonClouds"
 	float GetHeightFractionForPoint(float3 inPosition, float2 inCloudMinMax)
 	{
 		// Get global fractional p0sition in cloud zone.
-
-		//float height_fraction = .5;
-
 		float height_fraction = (inPosition.z - inCloudMinMax.x) / (inCloudMinMax.y - inCloudMinMax.x);
 
 		return saturate(height_fraction);
@@ -151,9 +148,12 @@ Shader "Custom/P5/HorizonClouds"
 	//float a is the height of the ray, namely the y value.
 	inline float DensityHeightFunction(float a, float4 gradient)
 	{
-		return smoothstep(gradient.x, gradient.y, a) - smoothstep(gradient.z, gradient.w, a);
+		return lerp(gradient.x, gradient.y, smoothstep(0, 1, a)) - lerp(gradient.z, gradient.w, smoothstep(0, 1, a));
 	}
-
+	inline float Lerp3(float v0, float v1, float v2, float a)
+	{
+		return a < 0.5 ? lerp(v0, v1, a * 2.0) : lerp(v1, v2, (a - 0.5) * 2.0);
+	}
 	//This function is used to figure out which clouds should be drawn and so forth
 	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
 	//This function samples the B channel (Cloud type) using the ray position. 
@@ -166,14 +166,14 @@ Shader "Custom/P5/HorizonClouds"
 		float gradient2 = DensityHeightFunction(p.y, _Gradient2);
 		float gradient3 = DensityHeightFunction(p.y, _Gradient3);
 
-		//float weightedSum  = Lerp3(gradient3,gradient2,gradient1,FLOAT4_TYPE(weather_data));
-		float4 weightedSum = float4(FLOAT4_TYPE(weather_data),gradient1,gradient2,gradient3);
-
+		//float weightedSum  = Lerp3(gradient1,gradient2,gradient3,FLOAT4_TYPE(weather_data));
+		float weightedSum = length(float4(FLOAT4_TYPE(weather_data),gradient1,gradient2,gradient3));
+		//float weightedSum = (gradient1 + gradient2 + gradient3) * FLOAT4_TYPE(weather_data);
 		//float weightedSum = FLOAT4_TYPE(weather_data) < 0.5 ? lerp( v0, v1, FLOAT4_TYPE(weather_data) * 2.0) : lerp( v1, v2, (FLOAT4_TYPE(weather_data)-0.5) * 2.0);
 		//Do the weighted sum thingy here using the three gradients floats and the b channel of weather_data.
-		//float weightedSum = 0;
+		//float weightedSum = 1;
 
-		return length(weightedSum);
+		return weightedSum;
 	}
 
 					
@@ -199,11 +199,6 @@ Shader "Custom/P5/HorizonClouds"
 	}
 	
 	inline float mix(float4 lowFreqNoise,float4 neglowFreqNoise, float a){
-		float mixValueR = smoothstep(lowFreqNoise.r,neglowFreqNoise.r, a);
-		float mixValueG = smoothstep(lowFreqNoise.g,neglowFreqNoise.g, a);
-		float mixValueB = smoothstep(lowFreqNoise.b,neglowFreqNoise.b, a);
-		float mixValueA = smoothstep(lowFreqNoise.a,neglowFreqNoise.a, a);
-		float sum = mixValueR +mixValueG+mixValueB+mixValueA;
 		return sum;
 	}
 
@@ -305,8 +300,10 @@ Shader "Custom/P5/HorizonClouds"
 		//The transition magic over height happens here:
 		float high_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM, saturate(height_fraction * 10));
 
-		float final_cloud = Remap(base_cloud_with_coverage,high_freq_noise_modifier * 0.2, 1.0 , 0.0 , 1.0) ;
+		//float final_cloud = base_cloud_with_coverage + high_freq_FBM* high_freq_noise_modifier* 0.2;
+		float final_cloud = Remap(base_cloud_with_coverage, high_freq_noise_modifier*0.2 , 1.0 , 0.0 , 1.0) ;
 		
+		//return base_cloud_with_coverage;
 		return final_cloud;
 
 
@@ -378,15 +375,13 @@ Shader "Custom/P5/HorizonClouds"
 						particle = float4( density, density, density, density);
 					}
 
-					/*
+					
 					float T = 1.0 -particle.a;
 					//p = pos + ray * f * _ViewDistance;
 					particle.a = 1.0- T;
 					float bottomShade =  atmosphereY;
 					float topShade = particle.y;//saturate(particle.y) ;
-					particle.rgb *= _LightColor0 +topShade;// +bottomShade;
 					particle.rgb*= particle.a;
-					*/
 
 					//We multiply the negative alpha with the particle for god knows why
 					//color.rgb

@@ -406,6 +406,7 @@ namespace kode80.Clouds
             //Perlin noise 3D texture - but we need a perlin-worly noise combined with three worley noises
             if (_perlin3D == null)
             {
+                //_perlin3D = Texture3dConverter.GeneratePerlinWorleyTexture3D(128, TextureFormat.RGBA32);
                 _perlin3D = Load3DTexture("kode80Clouds/noise", 128, TextureFormat.RGBA32);
             }
 
@@ -413,6 +414,9 @@ namespace kode80.Clouds
             //In Horizon guys case, we need this to be three, high frequency worley noises at increasing frequencies
             if (_detail3D == null)
             {
+                //_detail3D = Texture3dConverter.GenerateNoiseTexture3D(32, TextureFormat.RGB24);
+
+                //_detail3D = Texture3dConverter.GeneratePerlinWorleyTexture3D(32, TextureFormat.RGB24);
                 _detail3D = Load3DTexture("kode80Clouds/noise_detail", 32, TextureFormat.RGB24);
             }
 
@@ -492,6 +496,9 @@ namespace kode80.Clouds
                 _cloudMaterial.SetVector("_CloudHeightGradient1", _cloudGradientVector1);
                 _cloudMaterial.SetVector("_CloudHeightGradient2", _cloudGradientVector2);
                 _cloudMaterial.SetVector("_CloudHeightGradient3", _cloudGradientVector3);
+                _cloudMaterial.SetVector("_Gradient1", _cloudGradientVector1);
+                _cloudMaterial.SetVector("_Gradient2", _cloudGradientVector2);
+                _cloudMaterial.SetVector("_Gradient3", _cloudGradientVector3);
                 _cloudMaterial.SetTexture("_Coverage", cloudCoverage);
                 _cloudMaterial.SetTexture("_WeatherTexture", cloudCoverage);
 
