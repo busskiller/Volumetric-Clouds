@@ -136,42 +136,6 @@
     <Compile Include="Assets\GPUGraph\Editor\Graph System\ShaderDefs.cs" />
     <Compile Include="Assets\GPUGraph\Editor\RunTimeGraphEditor.cs" />
     <Compile Include="Assets\GPUGraph\Editor\StringUtils.cs" />
-    <Compile Include="Assets\kode80\Clouds\Editor\CloudsEditor.cs" />
-    <Compile Include="Assets\kode80\Clouds\Editor\CubemapExporter.cs" />
-    <Compile Include="Assets\kode80\Clouds\Editor\TimeOfDayEditor.cs" />
-    <Compile Include="Assets\kode80\Editor\Localization\Localize.cs" />
-    <Compile Include="Assets\kode80\Editor\Utils\ScriptableObjectUtility.cs" />
-    <Compile Include="Assets\kode80\Editor\Utils\UnityFileUtility.cs" />
-    <Compile Include="Assets\kode80\UnityTools\EditorTools\Editor\ComponentContextMenu.cs" />
-    <Compile Include="Assets\kode80\UnityTools\EditorTools\Editor\ComponentList.cs" />
-    <Compile Include="Assets\kode80\UnityTools\EditorTools\Editor\RecordVideoWindow.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIBase.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIBaseContainer.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIButton.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIColorField.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIDefaultInspector.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIDelayedIntField.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIEnumPopup.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIFoldout.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIHorizontal.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIIntSlider.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUILabel.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIObjectField.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIPopup.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIScrollView.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUISlider.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUISpace.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUITextField.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUITextureField.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIToggle.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIToolbar.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIVector3Field.cs" />
-    <Compile Include="Assets\kode80\UnityTools\GUIWrapper\Editor\GUIVertical.cs" />
-    <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\AssetUpdateWindow.cs" />
-    <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\AssetUpdater.cs" />
-    <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\AssetVersion.cs" />
-    <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\AssetVersionDownloader.cs" />
-    <Compile Include="Assets\kode80\UnityTools\Versioning\Editor\SemanticVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GPUGraph\LICENSE.txt" />
@@ -189,8 +153,6 @@
     <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
     <None Include="Assets\_ShaderProjectFiles\VolumeCloudsCommon.cginc" />
     <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
-    <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
-    <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlender.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlenderEditor.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
@@ -201,7 +163,6 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeCloudsCommon.cginc" />
     <None Include="Assets\kode80\Effects\Resources\FilmicTonemapping.shader" />
-    <None Include="Assets\kode80\UnityTools\AssetVersion.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

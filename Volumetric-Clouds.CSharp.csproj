@@ -78,15 +78,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\GPUGraph\Runtime\GraphUtils.cs" />
-    <Compile Include="Assets\GPUGraph\Runtime\RuntimeGraph.cs" />
-    <Compile Include="Assets\GPUGraph\Sample\SampleGPUGScript.cs" />
+    <Compile Include="Assets\FlyCamera.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\CloudManager.cs" />
-    <Compile Include="Assets\_ShaderProjectFiles\GlobalShaderVariables.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\RenderMaterialFullscreen.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\SunMovement.cs" />
     <Compile Include="Assets\_ShaderProjectFiles\Texture3dConverter.cs" />
-    <Compile Include="Assets\kode80\Clouds\Examples\Demo\Scripts\FlyCamera.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\BehaviorStateStore.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\CrepuscularRays.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\EditorState.cs" />
@@ -98,11 +94,8 @@
     <Compile Include="Assets\kode80\Clouds\Scripts\TimeOfDayKeyFrame.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\kode80CloudShadows.cs" />
     <Compile Include="Assets\kode80\Clouds\Scripts\kode80Clouds.cs" />
-    <Compile Include="Assets\kode80\Effects\Scripts\FilmicTonemapping.cs" />
-    <Compile Include="Assets\kode80\UnityTools\EditorTools\Scripts\RecordVideo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\GPUGraph\LICENSE.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Catlike Coding Readme.txt" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Example\Noise Example.shader" />
     <None Include="Assets\Plugins\Catlike Coding\Noise\Noise Readme.txt" />
@@ -117,8 +110,6 @@
     <None Include="Assets\_ShaderProjectFiles\Raymarching Volumetric Clouds Example.shader" />
     <None Include="Assets\_ShaderProjectFiles\VolumeCloudsCommon.cginc" />
     <None Include="Assets\_ShaderProjectFiles\Volumetric Clouds Example.shader" />
-    <None Include="Assets\kode80\Clouds\AssetVersion.xml" />
-    <None Include="Assets\kode80\Clouds\ChangeLog.txt" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlender.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudBlenderEditor.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\CloudCombiner.shader" />
@@ -128,8 +119,6 @@
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\TextureBrush.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeClouds.shader" />
     <None Include="Assets\kode80\Clouds\Resources\kode80Clouds\VolumeCloudsCommon.cginc" />
-    <None Include="Assets\kode80\Effects\Resources\FilmicTonemapping.shader" />
-    <None Include="Assets\kode80\UnityTools\AssetVersion.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

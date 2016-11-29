@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volumetric-Clouds.CSharp.Pl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volumetric-Clouds.CSharp", "Volumetric-Clouds.CSharp.csproj", "{7D5AFC9C-79D9-18FB-CBF4-4AD05F7B938B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volumetric-Clouds.CSharp.Editor", "Volumetric-Clouds.CSharp.Editor.csproj", "{BCAA1D35-F881-FE01-0600-CB6C94D50A4C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +19,6 @@ Global
 		{7D5AFC9C-79D9-18FB-CBF4-4AD05F7B938B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D5AFC9C-79D9-18FB-CBF4-4AD05F7B938B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D5AFC9C-79D9-18FB-CBF4-4AD05F7B938B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BCAA1D35-F881-FE01-0600-CB6C94D50A4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCAA1D35-F881-FE01-0600-CB6C94D50A4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BCAA1D35-F881-FE01-0600-CB6C94D50A4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BCAA1D35-F881-FE01-0600-CB6C94D50A4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
