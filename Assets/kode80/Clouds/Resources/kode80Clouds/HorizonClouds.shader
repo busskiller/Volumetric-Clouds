@@ -303,8 +303,16 @@ Shader "Custom/P5/HorizonClouds"
 	inline float PowderTerm(float densityAtSample, float cosTheta)
 	{
 		float powder = 1.0 - exp(-_Density * densityAtSample * 2.0);
-		powder = saturate(powder * _DarkOutlineScalar * 2.0);
-		return lerp(1.0, powder, smoothstep(0.5, -0.5, cosTheta));
+		float beers = 0.5;//exp(densityAtSample);
+		
+		//powder = saturate(powder * _DarkOutlineScalar * 2.0);
+		
+		//return lerp(1.0, powder, smoothstep(0.5, -0.5, cosTheta));
+
+		float sunlight = 2.0 * powder * beers;
+		
+		return sunlight;
+		//return lerp(1.0, sunlight, smoothstep(0.5, -0.5, cosTheta));
 	}
 
 	//Were all the magic happens. This is ommited from the book. Genious. Again, K80 to the rescue
@@ -389,6 +397,8 @@ Shader "Custom/P5/HorizonClouds"
 			// pos is our original position, and p is our current position which we are going to be using later on.
 			// For each iteration, we read from our SampleCloudDensity function the density of our current position, and add it to this density variable.
 
+			float transmittance = 1.0;
+
 			float3 ray = InternalRaySphereIntersect(_EarthRadius + _StartHeight, _CameraPosition, rayDirection);
 			float3 rayStep = rayDirection * _RayStepLength;
 
@@ -439,7 +449,7 @@ Shader "Custom/P5/HorizonClouds"
 					}
 
 					float T = 1.0 - particle.a;
-					// //?
+					transmittance *= T;
 
 
 					float dummy = 0;
@@ -450,7 +460,7 @@ Shader "Custom/P5/HorizonClouds"
 					ambientLight *= _AmbientScalar;
 					
 					particle.rgb = sunLight + ambientLight;
-					particle.a = 1.0 - T;
+					particle.a = 1.0 - T * transmittance;
 
 		
 					//float ambientLight =  lerp(_CloudBaseColor, _CloudTopColor, atmosphereY);
