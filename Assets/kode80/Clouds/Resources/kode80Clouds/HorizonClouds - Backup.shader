@@ -34,7 +34,7 @@ Shader "Custom/P5/HorizonClouds"
 	#include "VolumeCloudsCommon.cginc"
 
 	uniform fixed4 _LightColor0;
-
+	//uniform float4 _WorldSpaceLightPos0;
 	//Our defined global variables
 	sampler3D _PerlinWorleyNoise;
 	sampler3D _WorleyNoise;
@@ -58,9 +58,14 @@ Shader "Custom/P5/HorizonClouds"
 
 	//Our defined local properties
 	int _Iterations;
+	float3 _SkyColor;
+	float4 _CloudColor;
+	float _ViewDistance;
+	float _CloudDensity;
 	float _RayMinimumY;
 
 	//Cloud80DefinedVariables
+
 	float _CloudBottomFade;
 	float3 _BaseOffset;
 	float3 _DetailOffset;
@@ -107,8 +112,6 @@ Shader "Custom/P5/HorizonClouds"
 	#define FLOAT4_TYPE( f)		f.b
 	#define FLOAT4_COVERAGE( f)	f.r
 	#define FLOAT4_RAIN( f)		f.g
-	
-	
 	//Base input struct
 	struct v2f
 	{
@@ -128,6 +131,19 @@ Shader "Custom/P5/HorizonClouds"
 	}
 
 
+
+
+	//A function that calculates a normalized scalar values that represents the height of the current sample position (in the cloud layer)
+	//inPosition is the current ray position. However, I have no clue what inCloudMinMax is.
+	//This function is used during the last steps of the cloud modelling process. Ignore for now.
+	float GetHeightFractionForPoint(float3 inPosition, float2 inCloudMinMax)
+	{
+		// Get global fractional p0sition in cloud zone.
+		float height_fraction = (inPosition.z - inCloudMinMax.x) / (inCloudMinMax.y - inCloudMinMax.x);
+
+		return saturate(height_fraction);
+	}
+
 	//A remapping function, that maps values from one range to another, to be used when combining noises to make our clouds
 	float Remap(float original_value, float original_min, float original_max, float new_min, float new_max)
 	{
@@ -142,19 +158,17 @@ Shader "Custom/P5/HorizonClouds"
 	{
 		return lerp(gradient.x, gradient.y, smoothstep(0, 1, a)) - lerp(gradient.z, gradient.w, smoothstep(0, 1, a));
 	}
-	
-	
 	inline float Lerp3(float v0, float v1, float v2, float a)
 	{
 		return a < 0.5 ? lerp(v0, v1, a * 2.0) : lerp(v1, v2, (a - 0.5) * 2.0);
 	}
+
 
 	inline float NormalizedAtmosphereY(float3 ray)
 	{
 		float y = length(ray) - _EarthRadius - _StartHeight;
 		return y / _AtmosphereThickness;
 	}
-
 
 	//This function is used to figure out which clouds should be drawn and so forth
 	//Weather data is our weather texture channels. R is the Cloud Coverage, G is our Precipitation and B is our Cloud Type
@@ -207,7 +221,7 @@ Shader "Custom/P5/HorizonClouds"
 		return lerp( coverage, coverageB, alpha);
 	}
 	
-	//We use this function to transtiion between different cloud shapes by lerping all over the place!
+
 	inline float mix(float4 lowFreqNoise,float4 neglowFreqNoise, float a){
 		float mixValueR =  lerp(lowFreqNoise.r,neglowFreqNoise.r, smoothstep(0,1,a));
 		float mixValueG =  lerp(lowFreqNoise.g,neglowFreqNoise.g, smoothstep(0,1,a));
@@ -217,6 +231,7 @@ Shader "Custom/P5/HorizonClouds"
 		return sum;
 	}
 
+
 	//The main cloud moddeling function, where many of the above mentioned functions come into play
 	float SampleCloudDensity(float3 ray, float4 weather_data, float csRayHeight) 
 	{
@@ -225,9 +240,28 @@ Shader "Custom/P5/HorizonClouds"
 		//_Base scale will increase the size of the clouds _BaseScale+_BaseOffset
 		//We have to multiply by base scale as the texture we are looking into is huge simply using the ray coordinates as a lookup
 		//Will result in sampling the same area of all pixels, ergo we end up with one giant cloud in the sky
-		float4 samplingPos = float4(ray  * _BaseScale + _BaseOffset, 0);
+		
+
+		//WIND DIRECTION START
+		
+		float4 test = float4(ray  * _BaseScale + _BaseOffset, 0);
 		float2 inCloudMinMax = float2(_StartHeight, _EndHeight);
-		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, samplingPos).rgba;
+		float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
+
+		//if (csRayHeight < 0.1) {
+			float3 wind_direction = float3 (1.0, 10.0, 0.0);
+			float cloud_speed = 100.0;
+
+			float cloud_top_offset = 500.0+ 500 * csRayHeight;
+
+			ray += csRayHeight * wind_direction * cloud_top_offset;
+			ray += (wind_direction + float3(0.1, 0.0, 0.0)) * cloud_speed;
+		//}
+
+		//WIND DIRECTION STOP
+
+
+		float4 low_frequency_noises = tex3Dlod(_PerlinWorleyNoise, test).rgba;
 
 		//Here we make an FBM out of the 3 worley noises found in the GBA channels of the low_frequency_noises.
 		//We will be using this FBM to add detail to the low-frequency Perlin-Worley noise (the R channel)
@@ -238,47 +272,64 @@ Shader "Custom/P5/HorizonClouds"
 		float base_cloud = Remap(low_frequency_noises.r, -low_freq_FBM*_BaseFBMScale, 1.0, 0.0, 1.0);
 
 		//We use the GetDensityHeightGradientForPoint to figure out which clouds should be drawn
-		float4 density_height_gradient = GetDensityHeightGradientForPoint(ray,weather_data);
+		float4 density_height_gradient = GetDensityHeightGradientForPoint(ray,weather_data);  //GradientStep(csRayHeight,gradient);
 
 		//Here we apply height function to our base_cloud, to get the correct cloud
 		base_cloud *= density_height_gradient;
 
-		//At this point, we can stop working on base_cloud, however, it is really low-detailed and stuff (basically, you are not done with it!)
+
+
+		//At this point, we can stop working on base_cloud, however, it is really low-detailed and stuff (basically, you are not done with it)
 		//We need to apply the cloud coverage attribute from the weather texture to ensure that we can control how much clouds cover the sky
 		//The cloud coverage is stored in the weather_data's R channel
 		float cloud_coverage = weather_data.r;
 
 		//Funny enough, we use the remap function to combine the cloud coverage with our base_cloud
-		float coverageModifier = cloud_coverage;
+		float coverageModifier = cloud_coverage;// -smoothstep(0, 1, csRayHeight);//*smoothstep(-density_height_gradient, density_height_gradient, csRayHeight);
 		float base_cloud_with_coverage = Remap(base_cloud, coverageModifier, 1.0, 0.0, 1.0);
-
 
 		//We then multipy our newly mapped base_cloud with the coverage so that we get the correct coverage of different cloud types
 		//An example of this, is that smaller clouds should look lighter now. Stuff like that.
 		//base_cloud_with_coverage *= cloud_coverage;
 		//return base_cloud_with_coverage;
 
+		//Final steps, namely Part 3 (There is also a super short part 4 afterwards, no biggie.) 		
 
 		//Next, we finish off the cloud by adding realistic detail ranging from small billows to wispy distortions
-		//We use the curl noise to distort the sample coordinate at the bottom of the clouds. We do this to simulate turbulence.	
-		//We will then use our mix function to transition between cloud shapes
-		//First, sample the curl noise and apply it to the current position
-		float2 curl_noise = tex2Dlod(_CurlNoise, samplingPos);
+		//We use the curl noise to distort the sample coordinate at the bottom of the clouds
+		//We do this to simulate turbulence.
+		
+		//We get the height fraction (the position of the current sample) to use it when blending the different noises over height
+		//We use this together with the FBM we'll make in a momement to transition between cloud shapes
+		//float2 inCloudMinMax = ray.xy;
+		//float height_fraction = GetHeightFractionForPoint(test, inCloudMinMax);
+		
+		//Then we sample the curl noise...:
+		float2 curl_noise = tex2Dlod(_CurlNoise,test);
+
+		//coord.xyz += _DetailOffset;
+		//and...  apply it to the current position
+		//if(csRayHeight < 0.1)
 		ray.xy += curl_noise.xy * (1.0 - smoothstep(0,1,csRayHeight));
 
-		//We then build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
-		//First we need to sample our noise before using it to make FBM
+
+		//We  build an FBM out of our high-frequency Worley noises in order to add detail to the edges of the cloud
+		//First we need to sample the noise before using it to make FBM
+		//float3 high_frequency_noises = tex3Dlod(_WorleyNoise, float4(ray*0.1,0)).rgb;
 		float3 high_frequency_noises = tex3Dlod(_WorleyNoise, float4(ray*_BaseScale *_DetailScale + _DetailOffset, 0)).rgb;
+
+		//Then we make the FBM
 		float high_freq_FBM = (high_frequency_noises.r * 0.625) + (high_frequency_noises.g * 0.25) + (high_frequency_noises.b * 0.125);
 
-		//The transition magic over height happens here using our predifined mix function
+		//The transition magic over height happens here:
 		float high_freq_noise_modifier = mix(high_freq_FBM, 1.0 - high_freq_FBM,saturate(csRayHeight * 10));
 
-		//Here we remap our cloud with the high_freq_noise_modifier
+		//float final_cloud = base_cloud_with_coverage + high_freq_FBM* high_freq_noise_modifier* 0.2;
 		float final_cloud = Remap(base_cloud_with_coverage, high_freq_noise_modifier*_DetailFBMScale, 1.0 , 0.0 , 1.0) ;
 		
-		//return the final cloud!
+		//return base_cloud_with_coverage;
 		return final_cloud * _SampleScalar * smoothstep(0.0, _CloudBottomFade * 1.0, csRayHeight);
+
 
 	}
 
